@@ -10,6 +10,7 @@
 #include "UbxMessageParser.hpp"
 #include "ConstantDefinitions.hpp"
 #include "SensorDataHolder.hpp"
+#include "TouchPositionHandler.hpp"
 #include "ShowGSIMap.hpp"
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
@@ -24,7 +25,6 @@ TinyGPSPlus gps;
 int parseMode = PARSEMODE_WAIT_START;
 
 // ----- 関数のプロトタイプ宣言
-void handleTouchPosition();
 
 // ----- 液晶パネルの輝度制御
 const int brightness_list[] = {255, 128, 64, 32, 16};
@@ -41,6 +41,7 @@ ShowGSIMap *gsiMapDrawer = NULL;
 ShowDCIS *dicsDrawer = NULL;
 ShowDetailInfo *detailDrawer = NULL;
 SensorDataHolder *sensorDataHolder = NULL;
+TouchPositionHandler *touchPositionHandler = NULL;
 
 // ----- SDカードに入っている、ズームレベルの地図情報
 #define MAX_ZOOM_COUNT  21
@@ -162,6 +163,9 @@ void setup()
   // ----- センサデータ保持クラスの準備 
   sensorDataHolder = new SensorDataHolder(bmp);
 
+  // ----- タッチ位置を記憶するクラスの準備
+  touchPositionHandler = new TouchPositionHandler();
+
   // ----- 画面描画クラスの準備
   gsiMapDrawer = new ShowGSIMap();
   dicsDrawer = new ShowDCIS();
@@ -190,7 +194,7 @@ void loop()
   sensorDataHolder->updateSensorData();
   if (M5.Touch.isEnabled())
   {
-    handleTouchPosition();
+    touchPositionHandler->handleTouchPosition();
   }
   if (M5.BtnA.isPressed())
   {
@@ -306,25 +310,5 @@ void loop()
     }
     // ----- メッセージを受信していることを示すマークを表示する
     drawBusyMarker();
-  }
-}
-
-void handleTouchPosition()
-{
-  auto t = M5.Touch.getDetail();
-  auto x = t.x;
-  auto y = t.y;
-  auto p = t.isPressed();
-
-  // ----- タッチ位置をシリアルで通知(押されているときのみ)
-  if ((p)&&(x > 0)&&(y > 0))
-  {
-    Serial.print("Touch Position: ");
-    Serial.print(x);
-    Serial.print(",");
-    Serial.print(y);
-    Serial.print("  [");
-    Serial.print(p);
-    Serial.println("]");
   }
 }
