@@ -19,6 +19,22 @@ public:
   {
     try
     {
+      M5.Display.setCursor(0,0);
+      M5.Display.setTextSize(1);
+      M5.Display.setFont(&fonts::efontJA_16_b);
+      M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+      M5.Display.printf("地図表示\r\n");
+
+      if (!gps.location.isUpdated())
+      {
+        M5.Display.setCursor(110,30);
+        M5.Display.setTextSize(1);
+        M5.Display.setFont(&fonts::efontJA_16);
+        M5.Display.setTextColor(TFT_VIOLET, TFT_BLACK);
+        M5.Display.printf("位置特定中...\r\n");
+        return;
+      }
+
       double lat = gps.location.lat();
       double lng = gps.location.lng();
 

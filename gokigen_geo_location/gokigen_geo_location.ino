@@ -52,6 +52,8 @@ int nofZoomLevel = 0;
 
 // 画面表示モード
 int showDisplayMode = SHOW_GSI_MAP;
+bool needClearScreen = false;
+bool isScreenModeChanging = false;
 
 void drawBusyMarker()
 {
@@ -181,10 +183,11 @@ void setup()
   M5.Display.clear();
   M5.Display.setCursor(0,0);
   M5.Display.println("Initialization finished");
+  needClearScreen = true;
   Serial.println("- - - - -");
 
   delay(1500); // 少し待つ
-  M5.Display.clear();  // 画面クリア
+  //M5.Display.clear();
 }
 
 void loop()
@@ -192,27 +195,36 @@ void loop()
   // ----- ステータス更新
   M5.update();
   sensorDataHolder->updateSensorData();
-  if (M5.Touch.isEnabled())
+  if (!isScreenModeChanging)
   {
-    touchPositionHandler->handleTouchPosition();
-  }
-  if (M5.BtnA.isPressed())
-  {
-    // ----- ボタンA: 地図表示モードに切り替え
-    M5.Display.clear();
-    showDisplayMode = SHOW_GSI_MAP;
-  }
-  if (M5.BtnB.isPressed())
-  {
-    // ----- ボタンB: 災危通報表示モードに切り替え
-    M5.Display.clear();
-    showDisplayMode = SHOW_DCIS;
-  }
-  if (M5.BtnC.isPressed())
-  {
-    // ----- ボタンC: 詳細(文字)表示モードに切り替え
-    M5.Display.clear();
-    showDisplayMode = SHOW_DETAIL;
+    if (M5.Touch.isEnabled())
+    {
+      touchPositionHandler->handleTouchPosition();
+    }
+    if (M5.BtnA.isPressed())
+    {
+      // ----- ボタンA: 地図表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_GSI_MAP;
+      Serial.println("BtnA: GSI MAP MODE");
+    }
+    if (M5.BtnB.isPressed())
+    {
+      // ----- ボタンB: 災危通報表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_DCIS;
+      Serial.println("BtnB: DICS MODE");
+    }
+    if (M5.BtnC.isPressed())
+    {
+      // ----- ボタンC: 詳細(文字)表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_DETAIL;
+      Serial.println("BtnC: DETAIL MODE");
+    }
   }
 
   // ----- シリアルバッファにデータがある限り、全てのバイトを処理する
@@ -290,24 +302,32 @@ void loop()
         applyDateTime();
         isDateTimeApplied = true; // GPSからの時刻設定は１回のみとする。
       }
-
-      switch (showDisplayMode)
-      {
-        case SHOW_DCIS:
-          // 災危通報表示モード
-          dicsDrawer->drawScreen();
-          break;
-        case SHOW_DETAIL:
-          // 詳細(文字表示)モード
-          detailDrawer->drawScreen(gps, sensorDataHolder);
-          break;
-        case SHOW_GSI_MAP:
-        default:
-          // 地理院地図表示モード
-          gsiMapDrawer->drawScreen(gps, sensorDataHolder);
-          break;
-      }
     }
+
+    if (needClearScreen)
+    {
+        // ---- 画面クリアを実施
+        M5.Display.clear();
+        needClearScreen = false;
+    }
+    switch (showDisplayMode)
+    {
+      case SHOW_DCIS:
+        // 災危通報表示モード
+        dicsDrawer->drawScreen();
+        break;
+      case SHOW_DETAIL:
+        // 詳細(文字表示)モード
+        detailDrawer->drawScreen(gps, sensorDataHolder);
+        break;
+      case SHOW_GSI_MAP:
+      default:
+        // 地理院地図表示モード
+        gsiMapDrawer->drawScreen(gps, sensorDataHolder);
+        break;
+    }
+    isScreenModeChanging = false;
+
     // ----- メッセージを受信していることを示すマークを表示する
     drawBusyMarker();
   }
