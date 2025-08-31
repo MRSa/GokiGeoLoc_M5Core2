@@ -2,12 +2,6 @@
 #include <QZSSDCX.h>
 #include <QZQSM.h>
 
-// [参考サイト]
-// ----- https://github.com/SWITCHSCIENCE/QZSSDCX 
-//       (https://www.switch-science.com/blogs/magazine/gps-qzss-dc-report-dcx-receiving)
-// ----- https://github.com/baggio63446333/QZQSM
-//       (https://qiita.com/ta-oot/items/d721de91bfcbd952574b)
-
 #define QZSS_DCWORD_INDEX 10
 #define QZSS_DCMESSAGE_INDEX 14
 
