@@ -28,3 +28,12 @@
 #define SHOW_GSI_MAP 0 // 地理院地図表示モード
 #define SHOW_DCIS    1 // 災危通報表示モード
 #define SHOW_DETAIL  2 // 詳細(文字表示)モード
+
+// バイブレーション
+#define VIBRATION_WEAK    80
+#define VIBRATION_MIDDLE  120
+#define VIBRATION_STRONG  250
+
+#define VIBRATION_TIME_LONG 500
+#define VIBRATION_TIME_MIDDLE 250
+#define VIBRATION_TIME_SHORT 100

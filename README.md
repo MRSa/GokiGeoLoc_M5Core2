@@ -8,3 +8,7 @@ M5Stack Core2 w/GNSS module(M135) Control
 ## 参考情報
 
 - [地理院地図](https://maps.gsi.go.jp/help/howtouse.html)
+- [GPSシールドを使ってみちびき（QZSS）の災害・危機管理通報サービス（DC Report・DCX）を受信してみた。](https://www.switch-science.com/blogs/magazine/gps-qzss-dc-report-dcx-receiving)
+  - QZSSDCX: [https://github.com/SWITCHSCIENCE/QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
+- [u-blox GNSSモジュール+ESP32でみちびき（QZSS）の「災危通報」情報を受信する](https://qiita.com/ta-oot/items/d721de91bfcbd952574b)
+  - QZQSM: [https://github.com/baggio63446333/QZQSM](https://github.com/baggio63446333/QZQSM)

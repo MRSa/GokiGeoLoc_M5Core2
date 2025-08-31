@@ -12,6 +12,7 @@ public:
 
   }
 
+  bool isPressed() { return (_isPressed); }
   int getTouchX() { return (_posX); }
   int getTouchY() { return (_posY); }
 
@@ -30,18 +31,6 @@ public:
     {
         _posX = t.x;
         _posY = t.y;
-    }
-    
-    // ----- タッチ位置をシリアルで通知(押されているときのみ)
-    if ((_isPressed)&&(_posX > 0)&&(_posY > 0))
-    {
-        Serial.print("Touch Position: ");
-        Serial.print(_posX);
-        Serial.print(",");
-        Serial.print(_posY);
-        Serial.print("  [");
-        Serial.print(_isPressed);
-        Serial.println("]");
     }
   }
 };

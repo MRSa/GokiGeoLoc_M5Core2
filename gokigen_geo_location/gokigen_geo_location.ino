@@ -4,6 +4,9 @@
 #include <Adafruit_BMP280.h>
 #include <M5Unified.h>
 
+// ----- 関数のプロトタイプ宣言
+void makeVibration(int strength, int delayTime);
+
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
 #include "SDcardHandler.hpp"
@@ -23,8 +26,6 @@ TinyGPSPlus gps;
 
 // GNSSモジュール(シリアルポート)からデータを受信した時のステータス管理用
 int parseMode = PARSEMODE_WAIT_START;
-
-// ----- 関数のプロトタイプ宣言
 
 // ----- 液晶パネルの輝度制御
 const int brightness_list[] = {255, 128, 64, 32, 16};
@@ -85,6 +86,14 @@ void drawBusyMarker()
       M5.Display.printf("-");
       break;
   }
+}
+
+void makeVibration(int strength, int delayTime)
+{
+  // ----- バイブレーションで操作をフィードバックする
+  M5.Power.setVibration(strength);
+  delay(delayTime);
+  M5.Power.setVibration(0);
 }
 
 void applyDateTime()
@@ -208,6 +217,7 @@ void loop()
       needClearScreen = true;
       showDisplayMode = SHOW_GSI_MAP;
       Serial.println("BtnA: GSI MAP MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
     }
     if (M5.BtnB.isPressed())
     {
@@ -216,6 +226,7 @@ void loop()
       needClearScreen = true;
       showDisplayMode = SHOW_DCIS;
       Serial.println("BtnB: DICS MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
     }
     if (M5.BtnC.isPressed())
     {
@@ -224,6 +235,7 @@ void loop()
       needClearScreen = true;
       showDisplayMode = SHOW_DETAIL;
       Serial.println("BtnC: DETAIL MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
     }
   }
 
@@ -314,16 +326,16 @@ void loop()
     {
       case SHOW_DCIS:
         // 災危通報表示モード
-        dicsDrawer->drawScreen();
+        dicsDrawer->drawScreen(sensorDataHolder, touchPositionHandler, ubxMessageParser);
         break;
       case SHOW_DETAIL:
         // 詳細(文字表示)モード
-        detailDrawer->drawScreen(gps, sensorDataHolder);
+        detailDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
         break;
       case SHOW_GSI_MAP:
       default:
         // 地理院地図表示モード
-        gsiMapDrawer->drawScreen(gps, sensorDataHolder);
+        gsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
         break;
     }
     isScreenModeChanging = false;
