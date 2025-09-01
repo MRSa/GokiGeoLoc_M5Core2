@@ -69,19 +69,31 @@ public:
       );
 
       // ----- 情報表示（左側）
-      M5.Display.setCursor(5,25);
+      M5.Display.setCursor(0,25);
+      M5.Display.setFont(&fonts::efontJA_16);
+      M5.Display.printf("高度:\r\n %.2fm\r\n", gps.altitude.meters());
+      M5.Display.setCursor(0,65);
       M5.Display.setFont(&fonts::efontJA_16);
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-      M5.Display.printf("高度:%.2fm\r\n", gps.altitude.meters());
-      M5.Display.printf("気温:%.1f ℃\r\n気圧:%.1fhPa\r\n", dataHolder->getTemperature(), (dataHolder->getPressure() / 100.0f));
-      M5.Display.printf("電池:%02d%%\r\n", dataHolder->getBatteryLevel());
+      M5.Display.printf("気圧:\r\n %.1f hPa\r\n", (dataHolder->getPressure() / 100.0f));
+      M5.Display.setCursor(0,105);
+      M5.Display.printf("気温:\r\n %.1f ℃\r\n", dataHolder->getTemperature());
 
+      M5.Display.setCursor(0,205);
+      M5.Display.setFont(&fonts::efontJA_14);
+      M5.Display.printf("Zoom: %2d\r\n", _zoomLevel);
+
+      M5.Display.setCursor(0,220);
+      M5.Display.setFont(&fonts::efontJA_14);
+      M5.Display.printf("電池: %02d%%\r\n", dataHolder->getBatteryLevel());
 
       if (touchPos->isPressed())
       {
-        //----- タッチパネルが押されたことを検出
+        bool isHandled = false;
 
-
+        //----- タッチパネルが押された位置を検出
+        int posX = touchPos->getTouchX();
+        int posY = touchPos->getTouchY();
 
         // ---- 押された場所をSerial出力
         Serial.print("Touch Position:[");
@@ -90,11 +102,25 @@ public:
         Serial.print(touchPos->getTouchY());
         Serial.println("]");
 
-        // ----- バイブレーション
-        makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+/*
+        // ===== 左下の場所を押したときの処理 (ちょっと反応が悪いので考える...)
+        if ((posX < 70)&&(posY >= 180)&&(posY <= 230))
+        {
+          // ----- ズームレベルを変更する
+          _zoomLevel = getNextZoomLevel(_zoomLevel);
+          Serial.print("next zoom level ");      Serial.println(_zoomLevel);
 
-        // ---- 開放する
-        touchPos->resetPosition();
+          isHandled = true;
+        }
+*/
+        if (isHandled)
+        {
+          // ----- バイブレーション
+          makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+          
+          // ---- 開放する
+          touchPos->resetPosition();
+        }
       }
       isMapDrawed = true;
     }

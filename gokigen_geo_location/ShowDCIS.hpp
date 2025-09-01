@@ -9,6 +9,7 @@ class ShowDCIS
 {
   // ----- 災危通報の情報を表示する
 private:
+  bool _isDumped = false;
   int _messageIndex = 0;
   int _isClear = false;
   DCXDecoder _dcx_decoder;
@@ -34,9 +35,6 @@ private:
 
   void _doDecodeAndDisplay(uint8_t *dcrMessage)
   {
-    // 受信メッセージを(Serialに)ダンプ
-    _dumpQZSSSubFrameMessage(dcrMessage);
-
     uint8_t numWords = *(dcrMessage + QZSS_DCWORD_INDEX); 
     uint8_t dcr[numWords * 4];
     for (int i = 0; i < numWords * 4; i += 4)
@@ -55,7 +53,9 @@ private:
       {
         // 災害・危機管理通報サービス（DC Report）のメッセージ内容を表示
         _dc_report.Decode(dcr);
+        Serial.print("DCR: ");
         Serial.println(_dc_report.GetReport());
+        M5.Display.printf("%s\r\n", _dc_report.GetReport());
       }
       else if (mt == 44)
       {
@@ -67,10 +67,26 @@ private:
         }
         else
         {
-          // _dcx_decoder.printSummary(Serial, _decoder.r);
+          Serial.println("DCX: ");
+          _dcx_decoder.printSummary(Serial, _dcx_decoder.r);
+          Serial.println("- - -");
           _dcx_decoder.printAll(Serial, _dcx_decoder.r);
+          //_dcx_decoder.printSummary(&M5.Display, _dcx_decoder.r);
+          //_dcx_decoder.printAll(&M5.Display, _dcx_decoder.r);
         }
       }
+      else
+      {
+        // 受信メッセージを(Serialに)ダンプ
+        Serial.print("[Unknown2]");
+        _dumpQZSSSubFrameMessage(dcrMessage);        
+      }
+    }
+    else
+    {
+        // 受信メッセージを(Serialに)ダンプ
+        Serial.println("[Unknown1]");
+        _dumpQZSSSubFrameMessage(dcrMessage);
     }
   }
 
@@ -86,9 +102,10 @@ public:
     {
       M5.Display.clear();
       _isClear = false;
+      _isDumped = false;
     }
     M5.Display.setCursor(0,0);
-    M5.Display.setTextSize(2);
+    M5.Display.setTextSize(1);
     M5.Display.setFont(&fonts::efontJA_16_b);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.printf("### 災危通報 ###\r\n");
@@ -100,7 +117,7 @@ public:
     }
 
     // ----- 災危通報の表示
-    M5.Display.setCursor(0,45);
+    M5.Display.setCursor(0,20);
     M5.Display.setTextSize(1);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.setFont(&fonts::efontJA_16);
@@ -109,12 +126,18 @@ public:
       M5.Display.printf("受信メッセージなし");
       return;
     }
-    M5.Display.printf("受信メッセージ： %d/%d\r\n", (_messageIndex + 1), messageCount);
+    M5.Display.printf("受信メッセージ： %3d/%3d\r\n", (_messageIndex + 1), messageCount);
 
     // -----------------------------------------------
     //   ここで災危通報メッセージの表示を（１件づつ）行う
     // -----------------------------------------------
-    _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
+    if (!_isDumped)
+    {
+      M5.Display.setCursor(0,70);
+      M5.Display.setTextSize(1);
+      _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
+      _isDumped = true;
+    }
 
     // ----- 表示メッセージの変更確認 -----
     if (touchPos->isPressed())
@@ -135,11 +158,13 @@ public:
       {
         // メッセージ最大数を設定する
         _messageIndex = messageCount - 1;
+        _isDumped = false;
       }
       if (_messageIndex >= (messageCount - 1))
       {
         // 先頭バッファを設定する
-        _messageIndex = messageCount - 1;
+        _messageIndex = 0;
+        _isDumped = false;
       }
       _isClear = true; // 次回表示でメッセージを消去する
 

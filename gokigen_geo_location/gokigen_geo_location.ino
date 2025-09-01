@@ -6,6 +6,7 @@
 
 // ----- 関数のプロトタイプ宣言
 void makeVibration(int strength, int delayTime);
+int getNextZoomLevel(int zoomLevel);
 
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
@@ -47,6 +48,7 @@ TouchPositionHandler *touchPositionHandler = NULL;
 // ----- SDカードに入っている、ズームレベルの地図情報
 #define MAX_ZOOM_COUNT  21
 #define DIR_NAME_BUFFER_SIZE  300
+bool storedZoomLevelList[MAX_ZOOM_COUNT];
 char *dirNameIndex[MAX_ZOOM_COUNT];
 char dirNameBuffer[DIR_NAME_BUFFER_SIZE];
 int nofZoomLevel = 0;
@@ -86,6 +88,38 @@ void drawBusyMarker()
       M5.Display.printf("-");
       break;
   }
+}
+
+int getNextZoomLevel(int zoomLevel)
+{
+  try
+  {
+    int index = zoomLevel + 1;
+    for (; index < MAX_ZOOM_COUNT; index++)
+    {
+      if (storedZoomLevelList[index] == true)
+      {
+        // ---- 次に有効なzoom levelを応答する
+        return (index);
+      }
+    }
+    if (index >= MAX_ZOOM_COUNT)
+    {
+      for (index = 0; index < MAX_ZOOM_COUNT; index++)
+      {
+        // ----- 最初に有効な zoom levelを応答する
+        if (storedZoomLevelList[index] == true)
+        {
+          return (index);
+        }
+      }
+    }
+  }
+  catch(...)
+  {
+    // なにもしない
+  }
+  return zoomLevel;  // zoom level は変更しない
 }
 
 void makeVibration(int strength, int delayTime)
@@ -161,10 +195,30 @@ void setup()
   ubxMessageParser = new UbxMessageParser();
   ubxMessageParser->begin();
 
-  // --- ディレクトリ名をチェック(ズームレベルの確認)
+  // ----- ズームレベルリストの初期化
+  for (int index = 0; index < MAX_ZOOM_COUNT; index++)
+  {
+    storedZoomLevelList[index] = false;
+  }
   if (cardHandler->isCardReady())
   {
+    // --- ディレクトリ名をチェック(変更可能なズームレベルの確認)
     nofZoomLevel = cardHandler->listDirectory("/GpsTile", dirNameIndex, dirNameBuffer, MAX_ZOOM_COUNT, DIR_NAME_BUFFER_SIZE);
+    for (int index = 0; index < nofZoomLevel; index++)
+    {
+      int levelIndex = String(dirNameIndex[index]).toInt();
+      storedZoomLevelList[levelIndex] = true;
+    }
+    Serial.print("Supported Zoom level: ");
+    for (int index = 0; index < MAX_ZOOM_COUNT; index++)
+    {
+      if (storedZoomLevelList[index] == true)
+      {
+        Serial.print(index);
+        Serial.print(" ");
+      }
+    }
+    Serial.println("");
   }
   else
   {
