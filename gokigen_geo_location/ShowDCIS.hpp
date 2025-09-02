@@ -9,11 +9,35 @@ class ShowDCIS
 {
   // ----- 災危通報の情報を表示する
 private:
+  int _fontSize = 3;
   bool _isDumped = false;
   int _messageIndex = 0;
   int _isClear = false;
   DCXDecoder _dcx_decoder;
   QZQSM _dc_report;
+
+  void _applyFontSize()
+  {
+    switch (_fontSize)
+    {
+      case 0:
+        M5.Display.setFont(&fonts::efontJA_10);
+        break;
+      case 1:
+        M5.Display.setFont(&fonts::efontJA_12);
+        break;
+      case 2:
+        M5.Display.setFont(&fonts::efontJA_14);
+        break;
+      case 4:
+        M5.Display.setFont(&fonts::efontJA_24);
+        break;
+      case 3:
+      default:
+        M5.Display.setFont(&fonts::efontJA_16);
+        break;        
+    }
+  }
   
   void _dumpQZSSSubFrameMessage(uint8_t buffer[])
   {
@@ -64,6 +88,7 @@ private:
         if (!result)
         {
           Serial.println("ERR>DCX DECODE FAILURE...");
+          M5.Display.printf("DCX(Decode ERROR)\r\n");
         }
         else
         {
@@ -73,13 +98,15 @@ private:
           _dcx_decoder.printAll(Serial, _dcx_decoder.r);
           //_dcx_decoder.printSummary(&M5.Display, _dcx_decoder.r);
           //_dcx_decoder.printAll(&M5.Display, _dcx_decoder.r);
+          M5.Display.printf("DCX : ...\r\n");
         }
       }
       else
       {
         // 受信メッセージを(Serialに)ダンプ
         Serial.print("[Unknown2]");
-        _dumpQZSSSubFrameMessage(dcrMessage);        
+        _dumpQZSSSubFrameMessage(dcrMessage); 
+        M5.Display.printf("DCX: mt:%d\r\n", mt);
       }
     }
     else
@@ -87,6 +114,7 @@ private:
         // 受信メッセージを(Serialに)ダンプ
         Serial.println("[Unknown1]");
         _dumpQZSSSubFrameMessage(dcrMessage);
+        M5.Display.printf("DCX: pab:%02x mt:%d\r\n", pab, mt);
     }
   }
 
@@ -126,14 +154,18 @@ public:
       M5.Display.printf("受信メッセージなし");
       return;
     }
+    M5.Display.setFont(&fonts::efontJA_16);
     M5.Display.printf("受信メッセージ： %3d/%3d\r\n", (_messageIndex + 1), messageCount);
+
+    // ----- メッセージのフォントサイズを決定する
 
     // -----------------------------------------------
     //   ここで災危通報メッセージの表示を（１件づつ）行う
     // -----------------------------------------------
     if (!_isDumped)
     {
-      M5.Display.setCursor(0,70);
+      _applyFontSize();
+      M5.Display.setCursor(0,45);
       M5.Display.setTextSize(1);
       _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
       _isDumped = true;
@@ -144,14 +176,25 @@ public:
     {
       //----- タッチパネルが押されたことを検出
       int posX = touchPos->getTouchX();
-      if (posX < 160)
+      int posY = touchPos->getTouchY();
+      if ((posX < 100)&&(posY < 100))
       {
-        // ひとつ減らす
+        // --- 左上タッチで、フォントサイズを変更
+        _fontSize--;
+        if (_fontSize < 0)
+        {
+          // ---- 最小サイズよりも小さい場合は、最大サイズにする
+          _fontSize = 4;
+        }
+      }
+      else if (posX < 160)
+      {
+        // 表示メッセージをひとつ減らす
         _messageIndex--;
       }
       else
       {
-        // ひとつふやす
+        // 表示メッセージをひとつふやす
         _messageIndex++;
       }
       if (_messageIndex < 0)

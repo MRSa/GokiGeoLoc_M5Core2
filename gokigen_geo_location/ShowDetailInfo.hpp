@@ -36,7 +36,7 @@ public:
     M5.Display.printf("緯度: %.6f\r\n経度: %.6f\r\n高度: %.2f m\r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
     M5.Display.printf("気温: %.1f ℃\r\n気圧: %.1f hPa\r\n", dataHolder->getTemperature(), (dataHolder->getPressure() / 100.0f));
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
-    M5.Display.printf("輝度: %3d\r\n", getDisplayBrightness());
+    M5.Display.printf("輝度: %02x\r\n", getDisplayBrightness());
 
     // ----- ディスプレイの明るさ変更 -----
     if (touchPos->isPressed())
