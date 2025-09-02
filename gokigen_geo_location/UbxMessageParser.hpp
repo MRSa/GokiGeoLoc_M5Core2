@@ -73,6 +73,29 @@ private:
     Serial.println();
   }
 
+  bool _isStoreQZSSMessage()
+  {
+    // --------- 受信した QZSSメッセージを保管しておくかどうか判断する
+    uint8_t numWords = _ubxMessageBuffer[10];   // ワード数
+    uint8_t dcr[numWords * 4];                  // サブフレームデータの格納先
+    for (int i = 0; i < numWords * 4; i += 4) // 1ワードごとに処理
+    {
+      dcr[i + 0] = _ubxMessageBuffer[14 + i + 3];
+      dcr[i + 1] = _ubxMessageBuffer[14 + i + 2];
+      dcr[i + 2] = _ubxMessageBuffer[14 + i + 1];
+      dcr[i + 3] = _ubxMessageBuffer[14 + i + 0];
+    }
+    uint8_t pab = dcr[0];
+    uint8_t mt = dcr[1] >> 2;
+
+    if ((pab == 0x53 || pab == 0x9A || pab == 0xC6)&&((mt == 43) || mt == 44))
+    {
+      // --- 将来的には、ここで、ダブらず必要なメッセージのみ保管するようにしたい
+      Serial.println(" --- Received DCR/DCX Message! ---");
+    }
+    return (true);
+  }
+
 public:
   UbxMessageParser()
   {
@@ -95,16 +118,8 @@ public:
 
   bool begin()
   {
+    // ----- GNSSモジュールの初期化処理 （必要ならここに追加する） -----
 
-/**
-  // ----- GNSSモジュールの初期化処理 （必要ならここに追加する） -----
-
-  // UBX-CFG-GNSS (0x06 0x3E)メッセージの送信
-  sendUBX_CFG_GNSS_RXM_RAWX();
-
-  // UBX-CFG-GNSS (0x06 0x3E)メッセージの送信
-  sendUBX_CFG_GNSS();
-**/ 
     return (true);
   }
 
@@ -153,19 +168,23 @@ public:
     //// ----- チェックサム計算の実行結果
     //bool checkResult = _checkCheckSum(totalMessageLength);
 
-    // ----- QZSS サブフレームメッセージを保管する
+    // ----- QZSS サブフレームメッセージをダンプする
     //_dumpQZSSSubFrameMessage();
 
-    // ----- QZSS サブフレームメッセージを保管する
-    memcpy(_QZSSdcrMessage[_nofDcrMessageIndex], _ubxMessageBuffer, totalMessageLength);
-    _nofDcrMessageIndex++;
-    _nofDcrMessage++;
-    if (_nofDcrMessageIndex >= MAX_STORE_MESSAGE_SIZE)
+    // ----- QZSS サブフレームメッセージを保管する (前回データを消してから上書きする)
+    if (_isStoreQZSSMessage())
     {
-      // ----- 受信して格納するのは MAX_STORE_MESSAGE_SIZE 個
-      // -----  (バッファの先頭から入れ直す) ------
-      _nofDcrMessageIndex = 0;
-      _nofDcrMessage = MAX_STORE_MESSAGE_SIZE;
+      memset(_QZSSdcrMessage[_nofDcrMessageIndex], 0x00, (UBX_BUFFER_SIZE + 1));
+      memcpy(_QZSSdcrMessage[_nofDcrMessageIndex], _ubxMessageBuffer, totalMessageLength);
+      _nofDcrMessageIndex++;
+      _nofDcrMessage++;
+      if (_nofDcrMessageIndex >= MAX_STORE_MESSAGE_SIZE)
+      {
+        // ----- 受信して格納するのは MAX_STORE_MESSAGE_SIZE 個
+        // -----  (バッファの先頭から入れ直す) ------
+        _nofDcrMessageIndex = 0;
+        _nofDcrMessage = MAX_STORE_MESSAGE_SIZE;
+      }
     }
 
     // 処理が完了したので、バッファをリセットしてfalseを返す

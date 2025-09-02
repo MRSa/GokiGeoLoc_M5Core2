@@ -36,5 +36,25 @@ public:
     M5.Display.printf("緯度: %.6f\r\n経度: %.6f\r\n高度: %.2f m\r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters());
     M5.Display.printf("気温: %.1f ℃\r\n気圧: %.1f hPa\r\n", dataHolder->getTemperature(), (dataHolder->getPressure() / 100.0f));
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
+    M5.Display.printf("輝度: %3d\r\n", getDisplayBrightness());
+
+    // ----- ディスプレイの明るさ変更 -----
+    if (touchPos->isPressed())
+    {
+      //----- タッチパネルが押されたことを検出
+      int posX = touchPos->getTouchX();
+      int posY = touchPos->getTouchY();
+      if ((posX > 280)&&(posY < 40))
+      {
+        // 右上をタッチすることで、ディスプレイの明るさを変更する
+        changeDisplayBrightness();
+
+        // ----- バイブレーション
+        makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+      }
+
+      // ---- 開放する
+      touchPos->resetPosition();
+    }
   }
 };

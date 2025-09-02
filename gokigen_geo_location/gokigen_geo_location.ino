@@ -7,6 +7,8 @@
 // ----- 関数のプロトタイプ宣言
 void makeVibration(int strength, int delayTime);
 int getNextZoomLevel(int zoomLevel);
+int getDisplayBrightness();
+void changeDisplayBrightness();
 
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
@@ -31,6 +33,7 @@ int parseMode = PARSEMODE_WAIT_START;
 // ----- 液晶パネルの輝度制御
 const int brightness_list[] = {255, 128, 64, 32, 16};
 int i_brightness = 3;
+int max_brightnessIndex = 4;
 
 // ----- 初回の時刻反映を実行したかどうか
 bool isDateTimeApplied = false;
@@ -57,6 +60,21 @@ int nofZoomLevel = 0;
 int showDisplayMode = SHOW_GSI_MAP;
 bool needClearScreen = false;
 bool isScreenModeChanging = false;
+
+void changeDisplayBrightness()
+{
+  i_brightness--;
+  if (i_brightness < 0)
+  {
+    i_brightness = max_brightnessIndex;
+  }
+  M5.Display.setBrightness(brightness_list[i_brightness]);
+}
+
+int getDisplayBrightness()
+{
+  return brightness_list[i_brightness];
+}
 
 void drawBusyMarker()
 {
