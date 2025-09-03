@@ -1,20 +1,26 @@
-#include "SD.h"
+#include <SD.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
 #include <Adafruit_BMP280.h>
 #include <M5Unified.h>
 
-// ----- 関数のプロトタイプ宣言
-void makeVibration(int strength, int delayTime);
-int getNextZoomLevel(int zoomLevel);
-int getDisplayBrightness();
+// ----- 関数のプロトタイプ宣言 (UtilityFunctions.hh に定義)
 void changeDisplayBrightness();
+int getDisplayBrightness();
+int getNextZoomLevel(int zoomLevel);
+void makeVibration(int strength, int delayTime);
+void displayCurrentJstTime(char *header, struct tm *timeinfo);
+
+void drawBusyMarker();
+void applyDateTime();
+
+#include "ConstantDefinitions.h"
+#include "VariableDefinitions.h"
 
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
 #include "SDcardHandler.hpp"
 #include "UbxMessageParser.hpp"
-#include "ConstantDefinitions.hpp"
 #include "SensorDataHolder.hpp"
 #include "TouchPositionHandler.hpp"
 #include "ShowGSIMap.hpp"
@@ -27,18 +33,7 @@ Adafruit_BMP280 bmp(&Wire1);
 // ----- GPSのメッセージ処理用
 TinyGPSPlus gps;
 
-// GNSSモジュール(シリアルポート)からデータを受信した時のステータス管理用
-int parseMode = PARSEMODE_WAIT_START;
-
-// ----- 液晶パネルの輝度制御
-const int brightness_list[] = {255, 128, 64, 32, 16};
-int i_brightness = 3;
-int max_brightnessIndex = 4;
-
-// ----- 初回の時刻反映を実行したかどうか
-bool isDateTimeApplied = false;
-uint8_t busyMarkerCount = 0;
-
+// ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
 UbxMessageParser *ubxMessageParser = NULL;
 
@@ -48,125 +43,8 @@ ShowDetailInfo *detailDrawer = NULL;
 SensorDataHolder *sensorDataHolder = NULL;
 TouchPositionHandler *touchPositionHandler = NULL;
 
-// ----- SDカードに入っている、ズームレベルの地図情報
-#define MAX_ZOOM_COUNT  21
-#define DIR_NAME_BUFFER_SIZE  300
-bool storedZoomLevelList[MAX_ZOOM_COUNT];
-char *dirNameIndex[MAX_ZOOM_COUNT];
-char dirNameBuffer[DIR_NAME_BUFFER_SIZE];
-int nofZoomLevel = 0;
-
-// 画面表示モード
-int showDisplayMode = SHOW_GSI_MAP;
-bool needClearScreen = false;
-bool isScreenModeChanging = false;
-
-void changeDisplayBrightness()
-{
-  i_brightness--;
-  if (i_brightness < 0)
-  {
-    i_brightness = max_brightnessIndex;
-  }
-  M5.Display.setBrightness(brightness_list[i_brightness]);
-}
-
-int getDisplayBrightness()
-{
-  return brightness_list[i_brightness];
-}
-
-void drawBusyMarker()
-{
-  // ---- メッセージ受信を示す表示を画面下部(右下端)に
-  busyMarkerCount++;
-  if (busyMarkerCount > 4)
-  {
-    busyMarkerCount = 0;
-  }
-
-  M5.Display.setCursor(310,228);
-  M5.Display.setFont(&fonts::efontJA_10);
-  M5.Display.setTextSize(1);
-  M5.Display.setTextColor(TFT_GREEN, TFT_BLACK);
-  switch (busyMarkerCount)
-  {
-    case 3:
-      M5.Display.printf("/");
-      break;
-    case 2:
-      M5.Display.printf("|");
-      break;
-    case 1:
-      M5.Display.printf("\\");
-      break;
-
-    case 0:
-    default:
-      M5.Display.printf("-");
-      break;
-  }
-}
-
-int getNextZoomLevel(int zoomLevel)
-{
-  try
-  {
-    int index = zoomLevel + 1;
-    for (; index < MAX_ZOOM_COUNT; index++)
-    {
-      if (storedZoomLevelList[index] == true)
-      {
-        // ---- 次に有効なzoom levelを応答する
-        return (index);
-      }
-    }
-    if (index >= MAX_ZOOM_COUNT)
-    {
-      for (index = 0; index < MAX_ZOOM_COUNT; index++)
-      {
-        // ----- 最初に有効な zoom levelを応答する
-        if (storedZoomLevelList[index] == true)
-        {
-          return (index);
-        }
-      }
-    }
-  }
-  catch(...)
-  {
-    // なにもしない
-  }
-  return zoomLevel;  // zoom level は変更しない
-}
-
-void makeVibration(int strength, int delayTime)
-{
-  // ----- バイブレーションで操作をフィードバックする
-  M5.Power.setVibration(strength);
-  delay(delayTime);
-  M5.Power.setVibration(0);
-}
-
-void applyDateTime()
-{
-    // ----- GPSから受信した時刻をシステムに設定する処理
-    m5::rtc_datetime_t dt;
-      
-    // Set the date
-    dt.date.year = gps.date.year();
-    dt.date.month = gps.date.month();
-    dt.date.date = gps.date.day();
-      
-    // Set the time
-    dt.time.hours = gps.time.hour();
-    dt.time.minutes = gps.time.minute();
-    dt.time.seconds = gps.time.second();
-
-    // Set RTC time
-    M5.Rtc.setDateTime(dt);
-    M5.Rtc.setSystemTimeFromRtc();
-}
+// ----- ユーティリティ関数群の定義
+#include "UtilityFunctions.hh"
 
 void setup()
 {
@@ -221,7 +99,7 @@ void setup()
   if (cardHandler->isCardReady())
   {
     // --- ディレクトリ名をチェック(変更可能なズームレベルの確認)
-    nofZoomLevel = cardHandler->listDirectory("/GpsTile", dirNameIndex, dirNameBuffer, MAX_ZOOM_COUNT, DIR_NAME_BUFFER_SIZE);
+    nofZoomLevel = cardHandler->listDirectory(DIRNAME_GSI_MAP_ROOT, dirNameIndex, dirNameBuffer, MAX_ZOOM_COUNT, DIR_NAME_BUFFER_SIZE);
     for (int index = 0; index < nofZoomLevel; index++)
     {
       int levelIndex = String(dirNameIndex[index]).toInt();

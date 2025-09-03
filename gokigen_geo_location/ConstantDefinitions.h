@@ -23,7 +23,6 @@
 #define PARSEMODE_READ_NMEA 3
 #define PARSEMODE_NMEA_WAIT_LF 4
 
-
 // 画面表示モード
 #define SHOW_GSI_MAP 0 // 地理院地図表示モード
 #define SHOW_DCIS    1 // 災危通報表示モード
@@ -37,3 +36,8 @@
 #define VIBRATION_TIME_LONG 500
 #define VIBRATION_TIME_MIDDLE 250
 #define VIBRATION_TIME_SHORT 100
+
+// SDカードの地図格納フォルダ
+#define MAX_ZOOM_COUNT  21
+#define DIR_NAME_BUFFER_SIZE  300
+#define DIRNAME_GSI_MAP_ROOT  "/GpsTile"

@@ -2,8 +2,7 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 400
-#define MAX_STORE_MESSAGE_SIZE 150  // 過去のメッセージ保持数
-
+#define MAX_STORE_MESSAGE_SIZE 350  // 過去のメッセージ保持数
 class UbxMessageParser
 {
 private:
@@ -88,12 +87,27 @@ private:
     uint8_t pab = dcr[0];
     uint8_t mt = dcr[1] >> 2;
 
-    if ((pab == 0x53 || pab == 0x9A || pab == 0xC6)&&((mt == 43) || mt == 44))
+    if (pab == 0x53 || pab == 0x9A || pab == 0xC6)
     {
-      // --- 将来的には、ここで、ダブらず必要なメッセージのみ保管するようにしたい
-      Serial.println(" --- Received DCR/DCX Message! ---");
+      // PAB(preanble)がパターンA(0x53), パターンB(0x9A), パターンC(0xC6)でかつ、
+      // MT(MessageType) が 43(DCR) または MT:44(DCX) 以外のデータは保管しない。
+      // (詳細は、仕様書 IS-QZSS-L1S-xxx 参照)
+
+      // --- 将来的には、ここで、ダブらず必要なメッセージのみを保管するようにしたい
+      if (mt == 43)
+      {
+        // DCRメッセージ(気象情報等)を受信した
+        Serial.println(" --- Received DCR Message! ---");
+        return (true);
+      }
+      if (mt == 44)
+      {
+        // DCXメッセージ(J-Alert等)を受信した
+        Serial.println(" --- Received DCX Message! ---");
+        return (true);
+      }
     }
-    return (true);
+    return (false);
   }
 
 public:

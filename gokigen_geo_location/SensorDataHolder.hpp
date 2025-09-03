@@ -18,7 +18,7 @@ public:
   uint8_t getBatteryLevel() { return _batteryLevel; }
   double getTemperature() { return _temperature; }
   double getPressure() { return _pressure; }
-  struct tm getTimeInfo() { return _timeInfo; }
+  struct tm *getTimeInfo() { return &_timeInfo; }
   
 
 

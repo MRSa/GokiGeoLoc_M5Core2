@@ -22,7 +22,7 @@ public:
       M5.Display.setTextSize(1);
       M5.Display.setFont(&fonts::efontJA_16_b);
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-      M5.Display.printf("地図表示\r\n");
+      M5.Display.printf("## 地図 ##\r\n");
 
       if ((!gps.location.isUpdated())&&(!isMapDrawed))
       {
@@ -53,20 +53,12 @@ public:
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
       M5.Display.printf("緯度:%3.3f 経度:%3.3f\r\n", lat, lng);
       
-      // ----- 時刻表示 (左下)
-      struct tm timeinfo = dataHolder->getTimeInfo();
+      // ----- 時刻表示 (地図の下)
       M5.Display.setCursor(105,225);
       M5.Display.setTextSize(1);
       M5.Display.setFont(&fonts::efontJA_14);
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-      M5.Display.printf("%04d-%02d-%02d %02d:%02d:%02d\r\n" 
-                    ,timeinfo.tm_year + 1900
-                    ,timeinfo.tm_mon + 1
-                    ,timeinfo.tm_mday
-                    ,timeinfo.tm_hour + 9  // UTC -> JST
-                    ,timeinfo.tm_min
-                    ,timeinfo.tm_sec
-      );
+      displayCurrentJstTime("", dataHolder->getTimeInfo());
 
       // ----- 情報表示（左側）
       M5.Display.setCursor(0,25);
@@ -102,17 +94,16 @@ public:
         Serial.print(touchPos->getTouchY());
         Serial.println("]");
 
-/*
-        // ===== 左下の場所を押したときの処理 (ちょっと反応が悪いので考える...)
-        if ((posX < 70)&&(posY >= 180)&&(posY <= 230))
+        // ===== 左上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
+        if ((posX > 280)&&(posY < 60))
         {
           // ----- ズームレベルを変更する
           _zoomLevel = getNextZoomLevel(_zoomLevel);
-          Serial.print("next zoom level ");      Serial.println(_zoomLevel);
+          Serial.print("next zoom level ");
+          Serial.println(_zoomLevel);
 
           isHandled = true;
         }
-*/
         if (isHandled)
         {
           // ----- バイブレーション

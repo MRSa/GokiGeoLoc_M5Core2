@@ -136,7 +136,7 @@ public:
     M5.Display.setTextSize(1);
     M5.Display.setFont(&fonts::efontJA_16_b);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.printf("### 災危通報 ###\r\n");
+    M5.Display.printf("## 災危通報 ##\r\n");
 
     int messageCount = messageParser->getMessageCount();
     if (_messageIndex > (messageCount - 1))
@@ -177,9 +177,9 @@ public:
       //----- タッチパネルが押されたことを検出
       int posX = touchPos->getTouchX();
       int posY = touchPos->getTouchY();
-      if ((posX < 100)&&(posY < 100))
+      if ((posX > 280)&&(posY < 60))
       {
-        // --- 左上タッチで、フォントサイズを変更
+        // --- 右上タッチで、フォントサイズを変更
         _fontSize--;
         if (_fontSize < 0)
         {
@@ -212,7 +212,7 @@ public:
       _isClear = true; // 次回表示でメッセージを消去する
 
       // ----- バイブレーション
-      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_MIDDLE);
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_SHORT);
 
       // ---- 開放する
       touchPos->resetPosition();

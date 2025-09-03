@@ -24,15 +24,15 @@ private:
     // ---- 表示する sizeX, sizeX の画像を作り出す（最大４枚のタイルを毎回読み出す処理）
 
     //---- ロードするタイルのファイル名を生成する
-    char formString[] = "/GpsTile/%d/%d/%d.png";
+    char formString[] = "%s/%d/%d/%d.png";
     char tile1[64];
     char tile2[64];
     char tile3[64];
     char tile4[64];
-    sprintf(tile1, formString, zoom, tileX, tileY);
-    sprintf(tile2, formString, zoom, tileX + 1, tileY);
-    sprintf(tile3, formString, zoom, tileX, tileY + 1);
-    sprintf(tile4, formString, zoom, tileX + 1, tileY + 1);
+    sprintf(tile1, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX, tileY);
+    sprintf(tile2, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX + 1, tileY);
+    sprintf(tile3, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX, tileY + 1);
+    sprintf(tile4, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX + 1, tileY + 1);
 
     // 左上のデータをロードする
     _drawCanvas.drawPngFile(SD, tile1, 0, 0, _GsiMapSize, _GsiMapSize, topLeftX, topLeftY);
@@ -62,16 +62,18 @@ private:
     bool result = false;
 
     //---- ロードするタイルのファイル名を生成する
-    char errTile[] = "/GpsTile/none.png";
-    char formString[] = "/GpsTile/%d/%d/%d.png";
+    char formErr[] = "%s/none.png";
+    char formString[] = "%s/%d/%d/%d.png";
+    char errTile[64];
     char tile1[64];
     char tile2[64];
     char tile3[64];
     char tile4[64];
-    sprintf(tile1, formString, zoom, tileX, tileY);
-    sprintf(tile2, formString, zoom, tileX + 1, tileY);
-    sprintf(tile3, formString, zoom, tileX, tileY + 1);
-    sprintf(tile4, formString, zoom, tileX + 1, tileY + 1);
+    sprintf(errTile, formErr, DIRNAME_GSI_MAP_ROOT);
+    sprintf(tile1, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX, tileY);
+    sprintf(tile2, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX + 1, tileY);
+    sprintf(tile3, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX, tileY + 1);
+    sprintf(tile4, formString, DIRNAME_GSI_MAP_ROOT, zoom, tileX + 1, tileY + 1);
 
     // ----- データをロードする（4枚のタイルを _GsiMapSizex2 x _GsiMapSizex2 のキャンバスに展開する）
     if ((currentTile1X != tileX)||(currentTile1Y != tileY))
