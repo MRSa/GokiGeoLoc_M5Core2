@@ -1,0 +1,296 @@
+#include <SD.h>
+#include <SPI.h>
+#include <TinyGPSPlus.h>
+#include <Adafruit_BMP280.h>
+#include <M5Unified.h>
+
+// ----- 関数のプロトタイプ宣言 (UtilityFunctions.hh に定義)
+void changeDisplayBrightness();
+int getDisplayBrightness();
+int getNextZoomLevel(int zoomLevel);
+void makeVibration(int strength, int delayTime);
+void displayCurrentJstTime(char *header, struct tm *timeinfo);
+
+void drawBusyMarker();
+void applyDateTime();
+
+#include "ConstantDefinitions.h"
+#include "VariableDefinitions.h"
+
+#include "GsiTileCoordinate.hpp"
+#include "GsiMapDrawer.hpp"
+#include "SDcardHandler.hpp"
+#include "UbxMessageParser.hpp"
+#include "SensorDataHolder.hpp"
+#include "TouchPositionHandler.hpp"
+#include "ShowGSIMap.hpp"
+#include "ShowDCIS.hpp"
+#include "ShowDetailInfo.hpp"
+
+// ----- 圧力と温度のセンサ (BMP280 / I2C)
+Adafruit_BMP280 bmp(&Wire1);
+
+// ----- GPSのメッセージ処理用
+TinyGPSPlus gps;
+
+// ----- いろいろな内部クラス
+SDcardHandler *cardHandler = NULL;
+UbxMessageParser *ubxMessageParser = NULL;
+
+ShowGSIMap *gsiMapDrawer = NULL;
+ShowDCIS *dicsDrawer = NULL;
+ShowDetailInfo *detailDrawer = NULL;
+SensorDataHolder *sensorDataHolder = NULL;
+TouchPositionHandler *touchPositionHandler = NULL;
+
+// ----- ユーティリティ関数群の定義
+#include "UtilityFunctions.hh"
+
+void setup()
+{
+  // ----- M5 Unified の初期化処理
+  auto cfg = M5.config();
+  cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
+  M5.begin(cfg);
+
+  // ----- Display
+  M5.Display.init();
+  M5.Display.setRotation(1);
+  M5.Display.setBrightness(brightness_list[i_brightness]);
+  M5.Display.setTextSize(2);
+  M5.Display.println("Initializing");
+
+  // ----- Battery
+  M5.Power.begin();
+
+  // ----- PCとのシリアル通信
+  Serial.begin(SERIAL_BAUDRATE_PC);
+  Serial.println("Initializing...");
+
+  // ----- SDカードの初期化
+  cardHandler = new SDcardHandler();
+  if (!cardHandler->isCardReady())
+  {
+    // Print a message if SD card initialization failed or if the SD card does not exist.
+    M5.Display.print("\n SD card not detected\n");
+    Serial.print("\n SD card not detected\n");
+  }
+  else
+  {
+    M5.Display.print("\n SD card detected\n");
+    Serial.print("\n SD card detected\n");
+  }
+
+  // ----- BMP280 : Pressure / Temperature sensor
+  bmp.begin(BMP280_SENSOR_ADDR);
+
+  // GPSモジュールとの接続 (NEO-M9N)
+  UBLOX_SERIAL.begin(SERIAL_BAUDRATE_GPS, SERIAL_8N1, 13, 14);
+
+  // ----- ublox メッセージ解析クラスを作成
+  ubxMessageParser = new UbxMessageParser();
+  ubxMessageParser->begin();
+
+  // ----- ズームレベルリストの初期化
+  for (int index = 0; index < MAX_ZOOM_COUNT; index++)
+  {
+    storedZoomLevelList[index] = false;
+  }
+  if (cardHandler->isCardReady())
+  {
+    // --- ディレクトリ名をチェック(変更可能なズームレベルの確認)
+    nofZoomLevel = cardHandler->listDirectory(DIRNAME_GSI_MAP_ROOT, dirNameIndex, dirNameBuffer, MAX_ZOOM_COUNT, DIR_NAME_BUFFER_SIZE);
+    for (int index = 0; index < nofZoomLevel; index++)
+    {
+      int levelIndex = String(dirNameIndex[index]).toInt();
+      storedZoomLevelList[levelIndex] = true;
+    }
+    Serial.print("Supported Zoom level: ");
+    for (int index = 0; index < MAX_ZOOM_COUNT; index++)
+    {
+      if (storedZoomLevelList[index] == true)
+      {
+        Serial.print(index);
+        Serial.print(" ");
+      }
+    }
+    Serial.println("");
+  }
+  else
+  {
+    Serial.println("The SD card can not access.");
+  }
+
+  // ----- センサデータ保持クラスの準備 
+  sensorDataHolder = new SensorDataHolder(bmp);
+
+  // ----- タッチ位置を記憶するクラスの準備
+  touchPositionHandler = new TouchPositionHandler();
+
+  // ----- 画面描画クラスの準備
+  gsiMapDrawer = new ShowGSIMap();
+  dicsDrawer = new ShowDCIS();
+  detailDrawer = new ShowDetailInfo();
+
+  //----- setup() が終了したことを画面とシリアルに通知する
+
+  //  シリアルで通知
+  Serial.println("- - - - - - ");
+  Serial.println("  Initialization finished");
+
+  // 画面に表示
+  M5.Display.clear();
+  M5.Display.setCursor(0,0);
+  M5.Display.println("Initialization finished");
+  needClearScreen = true;
+  Serial.println("- - - - -");
+
+  delay(1500); // 少し待つ
+  //M5.Display.clear();
+}
+
+void loop()
+{
+  // ----- ステータス更新
+  M5.update();
+  sensorDataHolder->updateSensorData();
+  if (!isScreenModeChanging)
+  {
+    if (M5.Touch.isEnabled())
+    {
+      touchPositionHandler->handleTouchPosition();
+    }
+    if (M5.BtnA.isPressed())
+    {
+      // ----- ボタンA: 地図表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_GSI_MAP;
+      Serial.println("BtnA: GSI MAP MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+    }
+    if (M5.BtnB.isPressed())
+    {
+      // ----- ボタンB: 災危通報表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_DCIS;
+      Serial.println("BtnB: DICS MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+    }
+    if (M5.BtnC.isPressed())
+    {
+      // ----- ボタンC: 詳細(文字)表示モードに切り替え
+      isScreenModeChanging = true;
+      needClearScreen = true;
+      showDisplayMode = SHOW_DETAIL;
+      Serial.println("BtnC: DETAIL MODE");
+      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+    }
+  }
+
+  // ----- シリアルバッファにデータがある限り、全てのバイトを処理する
+  //  (メッセージが受信できた時は抜けて画面更新処理などを実行する)
+  bool isHandledMessage = false;
+  if (UBLOX_SERIAL.available() > 0)
+  {
+    uint8_t incomingByte = UBLOX_SERIAL.read();
+    switch (parseMode)
+    {
+      case PARSEMODE_WAIT_START:
+        if (incomingByte == 0xB5)
+        {
+          parseMode = PARSEMODE_WAIT_UBX;
+        }
+        else if (incomingByte == '$')
+        {
+          parseMode = PARSEMODE_READ_NMEA;
+          gps.encode(incomingByte);
+        }
+        // 他の不明なバイトは無視して次の開始バイトを待つ
+        break;
+
+      case PARSEMODE_WAIT_UBX:
+        if (incomingByte == 0x62)
+        {
+          uint8_t dummyByte = 0xB5;
+          ubxMessageParser->clear();
+          ubxMessageParser->putBuffer(dummyByte);
+          ubxMessageParser->putBuffer(incomingByte);
+          parseMode = PARSEMODE_READ_UBX;
+          //Serial.println("RECEIVED UBX MESSAGE.");
+        }
+        else
+        {
+          // 0xB5の次に0x62が来なかった場合は、開始待ちモードに戻る
+          parseMode = PARSEMODE_WAIT_START;
+        }
+        break;
+      
+      case PARSEMODE_READ_UBX:
+        // parseUBX関数に1バイトずつデータを渡し、メッセージが完了したらfalseを返す
+        if (!ubxMessageParser->parseUBX(incomingByte))
+        {
+          parseMode = PARSEMODE_WAIT_START;
+          isHandledMessage = true;
+        }
+        break;
+
+      case PARSEMODE_READ_NMEA:
+        // NMEAメッセージを受信したときは、処理をTinyGPSPlusに任せ、改行コード(LF)でメッセージの終わりと判断
+        gps.encode(incomingByte);
+        if (incomingByte == '\n')
+        {
+          parseMode = PARSEMODE_WAIT_START;
+          isHandledMessage = true;
+        }
+        break;
+      
+      default:
+        // 受信データが不正(不定)な状態の場合は先頭データの開始待ちに戻る
+        parseMode = PARSEMODE_WAIT_START;
+        break;
+    }
+  }
+
+  // ----- メッセージがそろったときのみ画面を更新する
+  if (isHandledMessage)
+  {
+    if (gps.location.isUpdated())
+    {
+      if ((!isDateTimeApplied)&&(gps.time.isValid()))
+      {
+        // 時刻設定
+        applyDateTime();
+        isDateTimeApplied = true; // GPSからの時刻設定は１回のみとする。
+      }
+    }
+
+    if (needClearScreen)
+    {
+        // ---- 画面クリアを実施
+        M5.Display.clear();
+        needClearScreen = false;
+    }
+    switch (showDisplayMode)
+    {
+      case SHOW_DCIS:
+        // 災危通報表示モード
+        dicsDrawer->drawScreen(sensorDataHolder, touchPositionHandler, ubxMessageParser);
+        break;
+      case SHOW_DETAIL:
+        // 詳細(文字表示)モード
+        detailDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        break;
+      case SHOW_GSI_MAP:
+      default:
+        // 地理院地図表示モード
+        gsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        break;
+    }
+    isScreenModeChanging = false;
+
+    // ----- メッセージを受信していることを示すマークを表示する
+    drawBusyMarker();
+  }
+}
