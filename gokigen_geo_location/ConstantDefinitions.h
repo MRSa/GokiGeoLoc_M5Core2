@@ -9,7 +9,7 @@
 #define DISPLAY_MAPSIZE 200
 
 // ----- I2C センサのアドレス
-#define BIM270_SENSOR_ADDR 0x68
+#define BMI270_SENSOR_ADDR 0x68
 #define BMP280_SENSOR_ADDR 0x76
 
 // ----- GPS(GNSS Module)関連
@@ -40,4 +40,4 @@
 // SDカードの地図格納フォルダ
 #define MAX_ZOOM_COUNT  21
 #define DIR_NAME_BUFFER_SIZE  300
-#define DIRNAME_GSI_MAP_ROOT  "/GpsTile"
+#define DIRNAME_GSI_MAP_ROOT  "/GsiMap"

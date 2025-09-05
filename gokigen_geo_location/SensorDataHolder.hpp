@@ -3,7 +3,7 @@ class SensorDataHolder
 
 private:
   // ----- 各種センサー情報
-  Adafruit_BMP280 bmp;
+  Adafruit_BMP280 _bmp;
   double _temperature = 0.0d;  // 温度
   double _pressure = 0.0d;     // 圧力
   double _altitude = 0.0d;     // 高度
@@ -14,7 +14,7 @@ private:
 public:
   SensorDataHolder(Adafruit_BMP280 &bmp280)
   {
-    bmp = bmp280;
+    _bmp = bmp280;
   }
 
   uint8_t getBatteryLevel() { return _batteryLevel; }
@@ -30,10 +30,10 @@ public:
     _batteryLevel = M5.Power.getBatteryLevel();
     
     // 温度と圧力と高度と沸点を取得する
-    _temperature = bmp.readTemperature();
-    _pressure = bmp.readPressure();
-    _altitude = bmp.readAltitude();
-    _waterBoilingPoint = bmp.waterBoilingPoint((float) _pressure);
+    _temperature = _bmp.readTemperature();
+    _pressure = _bmp.readPressure();
+    _altitude = _bmp.readAltitude();
+    _waterBoilingPoint = _bmp.waterBoilingPoint((float) _pressure);
     
     // 現在時刻を取得
     if(!getLocalTime(&_timeInfo))

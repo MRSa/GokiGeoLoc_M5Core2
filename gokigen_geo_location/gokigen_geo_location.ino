@@ -27,11 +27,11 @@ void applyDateTime();
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
 
-// ----- 圧力と温度のセンサ (BMP280 / I2C)
-Adafruit_BMP280 bmp(&Wire1);
-
 // ----- GPSのメッセージ処理用
 TinyGPSPlus gps;
+
+// ----- 圧力と温度のセンサ (BMP280 / I2C)
+Adafruit_BMP280 bmp280(&Wire1);
 
 // ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
@@ -60,6 +60,9 @@ void setup()
   M5.Display.setTextSize(2);
   M5.Display.println("Initializing");
 
+  // ----- IMU
+  M5.Imu.begin();
+
   // ----- Battery
   M5.Power.begin();
 
@@ -82,7 +85,12 @@ void setup()
   }
 
   // ----- BMP280 : Pressure / Temperature sensor
-  bmp.begin(BMP280_SENSOR_ADDR);
+  delay(300); // 少し待つ
+  bool isInitialized = bmp280.begin(BMP280_SENSOR_ADDR, BMP280_CHIPID);
+  if (!isInitialized)
+  {
+    Serial.print("\n BMP280 start Failure...\n");
+  }
 
   // GPSモジュールとの接続 (NEO-M9N)
   UBLOX_SERIAL.begin(SERIAL_BAUDRATE_GPS, SERIAL_8N1, 13, 14);
@@ -122,7 +130,7 @@ void setup()
   }
 
   // ----- センサデータ保持クラスの準備 
-  sensorDataHolder = new SensorDataHolder(bmp);
+  sensorDataHolder = new SensorDataHolder(bmp280);
 
   // ----- タッチ位置を記憶するクラスの準備
   touchPositionHandler = new TouchPositionHandler();
@@ -142,11 +150,14 @@ void setup()
   M5.Display.clear();
   M5.Display.setCursor(0,0);
   M5.Display.println("Initialization finished");
+  M5.Display.setTextSize(1);
+  M5.Display.setCursor(205,230);
+  M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+  M5.Display.println("GOKIGEN Project");    
   needClearScreen = true;
   Serial.println("- - - - -");
 
-  delay(1500); // 少し待つ
-  //M5.Display.clear();
+  delay(2000); // 少し待つ
 }
 
 void loop()
