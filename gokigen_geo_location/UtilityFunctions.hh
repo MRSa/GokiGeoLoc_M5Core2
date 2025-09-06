@@ -2,7 +2,6 @@
 // UtilityFunctions.hh
 ////////////////////////////////
 
-
 void changeDisplayBrightness()
 {
   i_brightness--;
@@ -17,7 +16,6 @@ int getDisplayBrightness()
 {
   return brightness_list[i_brightness];
 }
-
 
 int getNextZoomLevel(int zoomLevel)
 {

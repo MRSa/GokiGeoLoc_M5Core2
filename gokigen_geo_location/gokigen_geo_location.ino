@@ -1,22 +1,23 @@
+#include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
-#include <Adafruit_BMP280.h>
 #include <M5Unified.h>
 
-// ----- 関数のプロトタイプ宣言 (UtilityFunctions.hh に定義)
-void changeDisplayBrightness();
-int getDisplayBrightness();
-int getNextZoomLevel(int zoomLevel);
-void makeVibration(int strength, int delayTime);
-void displayCurrentJstTime(char *header, struct tm *timeinfo);
+// ----- 関数のプロトタイプ宣言 (実体は、UtilityFunctions.hh に定義)
+void changeDisplayBrightness();  // 画面の輝度を変更
+int getDisplayBrightness();      // 現在の画面の輝度を知る
+int getNextZoomLevel(int zoomLevel);   // 地図のズームレベルを変更する
+void makeVibration(int strength, int delayTime);   // バイブレーションを実行
+void displayCurrentJstTime(char *header, struct tm *timeinfo);  // 現在時刻を画面表示
 
-void drawBusyMarker();
-void applyDateTime();
+void drawBusyMarker();  // 画面右下に動作中マーカーを表示する
+void applyDateTime();   // GPSから受信した時刻をシステムに設定する
 
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
 
+#include "MyBmp280Sensor.hpp"
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
 #include "SDcardHandler.hpp"
@@ -27,11 +28,11 @@ void applyDateTime();
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
 
-// ----- 圧力と温度のセンサ (BMP280 / I2C)
-Adafruit_BMP280 bmp(&Wire1);
-
 // ----- GPSのメッセージ処理用
 TinyGPSPlus gps;
+
+// ----- 圧力と温度のセンサ (BMP280 / I2C)
+MyBmp280Sensor bmp280(M5.In_I2C);
 
 // ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
@@ -51,6 +52,8 @@ void setup()
   // ----- M5 Unified の初期化処理
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
+  cfg.internal_imu = true;
+  cfg.external_imu = true;
   M5.begin(cfg);
 
   // ----- Display
@@ -59,6 +62,9 @@ void setup()
   M5.Display.setBrightness(brightness_list[i_brightness]);
   M5.Display.setTextSize(2);
   M5.Display.println("Initializing");
+
+  // ----- IMU
+  M5.Imu.begin();
 
   // ----- Battery
   M5.Power.begin();
@@ -77,12 +83,17 @@ void setup()
   }
   else
   {
-    M5.Display.print("\n SD card detected\n");
-    Serial.print("\n SD card detected\n");
+    M5.Display.print("\nSD card detected\n");
+    Serial.print("\nSD card detected\n");
   }
 
+
   // ----- BMP280 : Pressure / Temperature sensor
-  bmp.begin(BMP280_SENSOR_ADDR);
+  delay(300); // 少し待つ
+  if (!bmp280.begin())
+  {
+    Serial.print("\n BMP280 start Failure...\n\n");
+  }
 
   // GPSモジュールとの接続 (NEO-M9N)
   UBLOX_SERIAL.begin(SERIAL_BAUDRATE_GPS, SERIAL_8N1, 13, 14);
@@ -105,7 +116,7 @@ void setup()
       int levelIndex = String(dirNameIndex[index]).toInt();
       storedZoomLevelList[levelIndex] = true;
     }
-    Serial.print("Supported Zoom level: ");
+    Serial.print("\nSupported Zoom level: ");
     for (int index = 0; index < MAX_ZOOM_COUNT; index++)
     {
       if (storedZoomLevelList[index] == true)
@@ -122,7 +133,7 @@ void setup()
   }
 
   // ----- センサデータ保持クラスの準備 
-  sensorDataHolder = new SensorDataHolder(bmp);
+  sensorDataHolder = new SensorDataHolder(bmp280);
 
   // ----- タッチ位置を記憶するクラスの準備
   touchPositionHandler = new TouchPositionHandler();
@@ -142,11 +153,15 @@ void setup()
   M5.Display.clear();
   M5.Display.setCursor(0,0);
   M5.Display.println("Initialization finished");
+  M5.Display.setTextSize(1);
+  M5.Display.setFont(&fonts::efontJA_14);
+  M5.Display.setCursor(205,222);
+  M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+  M5.Display.println("GOKIGEN Project");    
   needClearScreen = true;
-  Serial.println("- - - - -");
+  Serial.println("- - - - -\n");
 
-  delay(1500); // 少し待つ
-  //M5.Display.clear();
+  delay(2000); // 少し待つ
 }
 
 void loop()

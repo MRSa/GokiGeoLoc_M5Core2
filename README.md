@@ -20,10 +20,10 @@ M5Stack Core2 w/GNSS module(M135) Control
 
 ## 地図の置き方
 
-あらかじめ、SDカードに /GpsTile フォルダを作成し、その下に ズームレベルごと、数字名のサブフォルダを作成、その下に地理院地図のマップタイル画像（png形式の地図）を置きます。（例： /GpsTile/16/58180/25822.png  ← 地理院地図のズームレベル 16 の X:58180, Y:25822 である、png形式のタイル画像）
+あらかじめ、SDカードに /GsiMap フォルダを作成し、その下に ズームレベルごと、数字名のサブフォルダを作成、その下に地理院地図のマップタイル画像（png形式の地図）を置きます。（例： /GsiMap/16/58180/25822.png  ← 地理院地図のズームレベル 16 の X:58180, Y:25822 である、png形式のタイル画像）
 
 ズームレベルは16をデフォルトにしていますので、ズームレベル 16の地図をSDカードに格納することが望ましいです。
-地図をまったりダウンロードする batファイルが、 getGSImaps/GpsTile/（ズームレベル） の下に置いてありますので、参考にしていただけると幸いです。
+地図をまったりダウンロードする batファイルが、 getGSImaps/GsiMap/（ズームレベル） の下に置いてありますので、参考にしていただけると幸いです。
 
 SDカードは、FAT32形式でフォーマットしてください。（FAT32形式でフォーマットされている microSDカードであれば、128GBでも認識するようです。）
 
@@ -42,3 +42,5 @@ SDカードは、FAT32形式でフォーマットしてください。（FAT32�
   - QZSSDCX: [https://github.com/SWITCHSCIENCE/QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
 -[u-blox GNSSモジュール+ESP32でみちびき（QZSS）の「災危通報」情報を受信する](https://qiita.com/ta-oot/items/d721de91bfcbd952574b)
   - QZQSM: [https://github.com/baggio63446333/QZQSM](https://github.com/baggio63446333/QZQSM)
+- [Unit Mini IMU-Pro](https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit)
+  - [https://github.com/m5stack/M5Unit-IMU-Pro-Mini/](https://github.com/m5stack/M5Unit-IMU-Pro-Mini/)

@@ -138,6 +138,14 @@ public:
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.printf("## 災危通報 ##\r\n");
 
+    // ----- 操作領域にマーキング
+    M5.Display.setTextSize(1);
+    M5.Display.setFont(&fonts::efontJA_14_b);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    M5.Display.setCursor(308,0);
+    M5.Display.printf("F");
+    M5.Display.drawRect(304,0, 15,15, TFT_WHITE);
+
     int messageCount = messageParser->getMessageCount();
     if (_messageIndex > (messageCount - 1))
     {
@@ -201,18 +209,24 @@ public:
       {
         // メッセージ最大数を設定する
         _messageIndex = messageCount - 1;
+        Serial.print("Count LAST [");
+        Serial.print(_messageIndex);
+        Serial.println("]");
         _isDumped = false;
       }
-      if (_messageIndex >= (messageCount - 1))
+      if (_messageIndex > (messageCount - 1))
       {
         // 先頭バッファを設定する
         _messageIndex = 0;
+        Serial.print("Count FIRST [");
+        Serial.print(messageCount);
+        Serial.println("]");
         _isDumped = false;
       }
       _isClear = true; // 次回表示でメッセージを消去する
 
       // ----- バイブレーション
-      makeVibration(VIBRATION_WEAK, VIBRATION_TIME_SHORT);
+      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
 
       // ---- 開放する
       touchPos->resetPosition();

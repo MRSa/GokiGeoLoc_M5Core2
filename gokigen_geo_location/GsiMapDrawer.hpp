@@ -9,17 +9,19 @@ private:
   int _displaySizeX = 0;
   int _displaySizeY = 0;
 
-  //M5Canvas bufferCanvas;
-  //int currentTile1X = 0;
-  //int currentTile1Y = 0;
-  //int currentTile2X = 0;
-  //int currentTile2Y = 0;
-  //int currentTile3X = 0;
-  //int currentTile3Y = 0;
-  //int currentTile4X = 0;
-  //int currentTile4Y = 0;
+/*
+  M5Canvas bufferCanvas;
+  int currentTile1X = 0;
+  int currentTile1Y = 0;
+  int currentTile2X = 0;
+  int currentTile2Y = 0;
+  int currentTile3X = 0;
+  int currentTile3Y = 0;
+  int currentTile4X = 0;
+  int currentTile4Y = 0;
+*/
 
-  void loadPictureSingleTile(int zoom, int tileX, int tileY, int topLeftX, int topLeftY)
+  void _loadPictureSingleTile(int zoom, int tileX, int tileY, int topLeftX, int topLeftY)
   {
     // ---- 表示する sizeX, sizeX の画像を作り出す（最大４枚のタイルを毎回読み出す処理）
 
@@ -55,7 +57,7 @@ private:
   }
 
 /*
-  void loadPictureCachedTile(int zoom, int tileX, int tileY, int topLeftX, int topLeftY)
+  void _loadPictureCachedTile(int zoom, int tileX, int tileY, int topLeftX, int topLeftY)
   {
     // ---- ４枚のタイルを読み出し、キャッシュする処理
     //  (キャッシュしたそキャンバスから、必要なエリアだけ抽出して描画するため、、そのうち使いたい)
@@ -143,7 +145,7 @@ private:
   }
 */
 
-  void drawGsiMap(int targetX, int targetY, int centerX, int centerY)
+  void _drawGsiMap(int targetX, int targetY, int centerX, int centerY)
   {
 
     M5.Display.startWrite();
@@ -197,11 +199,11 @@ public:
 
     // Serial.println("--- Load START ---");
     // loadPictureCachedTile(zoom, tileX, tileY, topLeftX, topLeftY); // そのうちこっちでやりたい
-    loadPictureSingleTile(zoom, tileX, tileY, topLeftX, topLeftY);
+    _loadPictureSingleTile(zoom, tileX, tileY, topLeftX, topLeftY);
     // Serial.println("--- Load FINISH ---");
 
     // 地図を画面に描画する
-    drawGsiMap(targetX, targetY, _displaySizeX / 2, _displaySizeY / 2);
+    _drawGsiMap(targetX, targetY, _displaySizeX / 2, _displaySizeY / 2);
   }
 
 };

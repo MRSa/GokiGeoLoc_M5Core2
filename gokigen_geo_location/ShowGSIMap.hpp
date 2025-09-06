@@ -35,6 +35,15 @@ public:
         return;
       }
 
+      // ----- 操作領域にマーキングを施す
+      M5.Display.setTextSize(1);
+      M5.Display.setFont(&fonts::efontJA_14_b);
+      M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+      M5.Display.setCursor(308,0);
+      M5.Display.printf("Z");
+      M5.Display.drawRect(304,0, 15, 15, TFT_WHITE);
+
+      // ----- 緯度経度を取得
       double lat = gps.location.lat();
       double lng = gps.location.lng();
 
@@ -67,7 +76,7 @@ public:
       M5.Display.setCursor(0,65);
       M5.Display.setFont(&fonts::efontJA_16);
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-      M5.Display.printf("気圧:\r\n %.1f hPa\r\n", (dataHolder->getPressure() / 100.0f));
+      M5.Display.printf("気圧:\r\n %.1f hPa\r\n", (dataHolder->getPressure() / 100.0d));
       M5.Display.setCursor(0,105);
       M5.Display.printf("気温:\r\n %.1f ℃\r\n", dataHolder->getTemperature());
 
@@ -107,7 +116,7 @@ public:
         if (isHandled)
         {
           // ----- バイブレーション
-          makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+          makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
           
           // ---- 開放する
           touchPos->resetPosition();

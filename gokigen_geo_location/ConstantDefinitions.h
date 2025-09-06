@@ -9,8 +9,20 @@
 #define DISPLAY_MAPSIZE 200
 
 // ----- I2C センサのアドレス
-#define BIM270_SENSOR_ADDR 0x68
+#define BMI270_SENSOR_ADDR 0x69
 #define BMP280_SENSOR_ADDR 0x76
+
+#define I2C_COMMUNICATION_SPEED 400000
+
+// BMP280のチップID
+#define BMP280_CHIPID 0x58
+
+// BMP280のレジスタアドレス
+#define BMP280_CHIP_ID_REG 0xD0
+#define BMP280_CALIB_REG_START 0x88
+#define BMP280_CTRL_MEAS_REG 0xF4
+#define BMP280_PRESS_MSB_REG 0xF7
+#define BMP280_TEMP_MSB_REG 0xFA
 
 // ----- GPS(GNSS Module)関連
 #define SERIAL_BAUDRATE_GPS 38400
@@ -40,4 +52,4 @@
 // SDカードの地図格納フォルダ
 #define MAX_ZOOM_COUNT  21
 #define DIR_NAME_BUFFER_SIZE  300
-#define DIRNAME_GSI_MAP_ROOT  "/GpsTile"
+#define DIRNAME_GSI_MAP_ROOT  "/GsiMap"
