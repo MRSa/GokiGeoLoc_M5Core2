@@ -36,12 +36,13 @@ public:
     displayCurrentJstTime("時刻: ", dataHolder->getTimeInfo());
 
     // M5.Display.printf("衛星: %d\r\n", gps.satellites.value());
-    M5.Display.printf("緯度: %.6f\r\n経度: %.6f\r\n高度: %.2f m (BMP280: %.2f m)\r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters(), dataHolder->getAltitude());
-    M5.Display.printf("気温: %.1f ℃\r\n気圧: %.1f hPa\r\n", dataHolder->getTemperature(), (dataHolder->getPressure() / 100.0d));
+    M5.Display.printf("緯度: %.6f\r\n経度: %.6f\r\n高度: %.2f m (BMP280: %.2f m)       \r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters(), dataHolder->getAltitude());
+    M5.Display.printf("気温: %.1f ℃ (IMU: %.1f ℃)      \r\n", dataHolder->getTemperature(), dataHolder->getImuTemperature());
+    M5.Display.printf("気圧: %.1f hPa\r\n", (dataHolder->getPressure() / 100.0d));
     // M5.Display.printf("沸点: %.1f ℃\r\n", dataHolder->getWaterBoilingPoint());   // 取得してみたが、、、あきらかに値がおかしいので取得をやめる
     M5.Display.printf("重力: X:%-2.1f y:%-2.1f z:%-2.1f       \r\n", dataHolder->getAccelX(), dataHolder->getAccelY(), dataHolder->getAccelZ());
     M5.Display.printf("傾き: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getGyroX(), dataHolder->getGyroY(), dataHolder->getGyroZ());
-    // M5.Display.printf("磁力: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
+    M5.Display.printf("磁力: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
     M5.Display.printf("輝度: %02x\r\n", getDisplayBrightness());
 

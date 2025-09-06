@@ -63,15 +63,25 @@ void setup()
   M5.Display.setTextSize(2);
   M5.Display.println("Initializing");
 
-  // ----- IMU
-  M5.Imu.begin();
-
-  // ----- Battery
-  M5.Power.begin();
-
   // ----- PCとのシリアル通信
   Serial.begin(SERIAL_BAUDRATE_PC);
   Serial.println("Initializing...");
+
+  // ----- IMU
+  auto imuResult = M5.Imu.begin();
+  if (imuResult)
+  {
+    auto imuMask = M5.Imu.update();    
+    Serial.print("\nIMU is ready. : 0x");
+    Serial.println(imuMask, HEX);
+  }
+  else
+  {
+    Serial.println("\nIMU is disabled.");
+  }
+
+  // ----- Battery
+  M5.Power.begin();
 
   // ----- SDカードの初期化
   cardHandler = new SDcardHandler();
@@ -87,9 +97,7 @@ void setup()
     Serial.print("\nSD card detected\n");
   }
 
-
   // ----- BMP280 : Pressure / Temperature sensor
-  delay(300); // 少し待つ
   if (!bmp280.begin())
   {
     Serial.print("\n BMP280 start Failure...\n\n");
