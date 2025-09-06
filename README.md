@@ -73,6 +73,7 @@ SDカードは、FAT32形式でフォーマットしてください。FAT32形�
 
 - [M5Unifiedライブラリの始め方](https://docs.m5stack.com/ja/arduino/m5unified/helloworld)
   - [M5Unified](https://github.com/m5stack/M5Unified)
+  - [M5Unified IMU Class](https://docs.m5stack.com/en/arduino/m5unified/imu_class)
 - [M5GFX Setup](https://docs.m5stack.com/ja/arduino/m5gfx/m5gfx)
   - [M5GFX](https://github.com/M5Stack/M5GFX)
 - [Adafruit_BMP280_Library](https://github.com/adafruit/Adafruit_BMP280_Library/tree/master)
