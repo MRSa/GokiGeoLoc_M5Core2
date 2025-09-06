@@ -1,10 +1,10 @@
+#include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
-#include <Adafruit_BMP280.h>
 #include <M5Unified.h>
 
-// ----- 関数のプロトタイプ宣言 (UtilityFunctions.hh に定義)
+// ----- 関数のプロトタイプ宣言 (実体は、UtilityFunctions.hh に定義)
 void changeDisplayBrightness();
 int getDisplayBrightness();
 int getNextZoomLevel(int zoomLevel);
@@ -17,6 +17,7 @@ void applyDateTime();
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
 
+#include "MyBmp280Sensor.hpp"
 #include "GsiTileCoordinate.hpp"
 #include "GsiMapDrawer.hpp"
 #include "SDcardHandler.hpp"
@@ -31,7 +32,7 @@ void applyDateTime();
 TinyGPSPlus gps;
 
 // ----- 圧力と温度のセンサ (BMP280 / I2C)
-Adafruit_BMP280 bmp280(&Wire1);
+MyBmp280Sensor bmp280(M5.In_I2C);
 
 // ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
@@ -51,6 +52,8 @@ void setup()
   // ----- M5 Unified の初期化処理
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
+  cfg.internal_imu = true;
+  cfg.external_imu = true;
   M5.begin(cfg);
 
   // ----- Display
@@ -80,16 +83,16 @@ void setup()
   }
   else
   {
-    M5.Display.print("\n SD card detected\n");
-    Serial.print("\n SD card detected\n");
+    M5.Display.print("\nSD card detected\n");
+    Serial.print("\nSD card detected\n");
   }
+
 
   // ----- BMP280 : Pressure / Temperature sensor
   delay(300); // 少し待つ
-  bool isInitialized = bmp280.begin(BMP280_SENSOR_ADDR, BMP280_CHIPID);
-  if (!isInitialized)
+  if (!bmp280.begin())
   {
-    Serial.print("\n BMP280 start Failure...\n");
+    Serial.print("\n BMP280 start Failure...\n\n");
   }
 
   // GPSモジュールとの接続 (NEO-M9N)
@@ -113,7 +116,7 @@ void setup()
       int levelIndex = String(dirNameIndex[index]).toInt();
       storedZoomLevelList[levelIndex] = true;
     }
-    Serial.print("Supported Zoom level: ");
+    Serial.print("\nSupported Zoom level: ");
     for (int index = 0; index < MAX_ZOOM_COUNT; index++)
     {
       if (storedZoomLevelList[index] == true)
@@ -151,11 +154,12 @@ void setup()
   M5.Display.setCursor(0,0);
   M5.Display.println("Initialization finished");
   M5.Display.setTextSize(1);
-  M5.Display.setCursor(205,230);
+  M5.Display.setFont(&fonts::efontJA_14);
+  M5.Display.setCursor(205,222);
   M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   M5.Display.println("GOKIGEN Project");    
   needClearScreen = true;
-  Serial.println("- - - - -");
+  Serial.println("- - - - -\n");
 
   delay(2000); // 少し待つ
 }
