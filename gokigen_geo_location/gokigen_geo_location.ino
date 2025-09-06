@@ -5,14 +5,14 @@
 #include <M5Unified.h>
 
 // ----- 関数のプロトタイプ宣言 (実体は、UtilityFunctions.hh に定義)
-void changeDisplayBrightness();
-int getDisplayBrightness();
-int getNextZoomLevel(int zoomLevel);
-void makeVibration(int strength, int delayTime);
-void displayCurrentJstTime(char *header, struct tm *timeinfo);
+void changeDisplayBrightness();  // 画面の輝度を変更
+int getDisplayBrightness();      // 現在の画面の輝度を知る
+int getNextZoomLevel(int zoomLevel);   // 地図のズームレベルを変更する
+void makeVibration(int strength, int delayTime);   // バイブレーションを実行
+void displayCurrentJstTime(char *header, struct tm *timeinfo);  // 現在時刻を画面表示
 
-void drawBusyMarker();
-void applyDateTime();
+void drawBusyMarker();  // 画面右下に動作中マーカーを表示する
+void applyDateTime();   // GPSから受信した時刻をシステムに設定する
 
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
