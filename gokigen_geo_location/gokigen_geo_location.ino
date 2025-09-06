@@ -75,22 +75,22 @@ void setup()
   if (imuResult)
   {
     auto imuMask = M5.Imu.update();    
-    Serial.print("\nIMU is ready. : 0x");
+    Serial.print("IMU is ready. : 0x");
     Serial.println(imuMask, HEX);
   }
   else
   {
-    Serial.println("\nIMU is disabled...");
+    Serial.println("  IMU is disabled...");
   }
 
   // ----- BMP280 : Pressure / Temperature sensor
   if (!bmp280.begin())
   {
-    Serial.println("\n BMP280 start Failure...");
+    Serial.println("  BMP280 start Failure...");
   }
   else
   {
-    Serial.println("\nBMP280 is ready.");
+    Serial.println("BMP280 is ready.");
   }
 
   // ----- SDカードの初期化
@@ -99,12 +99,12 @@ void setup()
   {
     // Print a message if SD card initialization failed or if the SD card does not exist.
     M5.Display.print("\n SD card not detected\n");
-    Serial.println("\n SD card not detected");
+    Serial.println("  SD card not detected");
   }
   else
   {
     M5.Display.print("\nSD card detected\n");
-    Serial.println("\nSD card detected");
+    Serial.println("SD card detected");
   }
 
   // GPSモジュールとの接続 (NEO-M9N)
@@ -128,7 +128,7 @@ void setup()
       int levelIndex = String(dirNameIndex[index]).toInt();
       storedZoomLevelList[levelIndex] = true;
     }
-    Serial.print("  Zoom level: ");
+    Serial.print("Zoom level: ");
     for (int index = 0; index < MAX_ZOOM_COUNT; index++)
     {
       if (storedZoomLevelList[index] == true)
@@ -137,11 +137,11 @@ void setup()
         Serial.print(" ");
       }
     }
-    Serial.println("\n");
+    Serial.println("");
   }
   else
   {
-    Serial.println("The SD card can not access.");
+    Serial.println("  The SD card can not access.");
   }
 
   // ----- センサデータ保持クラスの準備 
@@ -159,8 +159,8 @@ void setup()
   delay(300); // 少し待つ
 
   //  シリアルで通知
-  Serial.println("- - - - - - ");
-  Serial.println("  Initialization finished");
+  Serial.println("\n- - - - - - ");
+  Serial.println("Initialization finished");
 
   // 画面に表示
   M5.Display.clear();
