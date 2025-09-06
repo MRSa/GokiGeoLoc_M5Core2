@@ -53,7 +53,7 @@ void setup()
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
   cfg.internal_imu = true;
-  cfg.external_imu = true;
+  cfg.external_imu = false;
   M5.begin(cfg);
 
   // ----- Display
@@ -67,6 +67,9 @@ void setup()
   Serial.begin(SERIAL_BAUDRATE_PC);
   Serial.println("Initializing...");
 
+  // ----- Battery
+  M5.Power.begin();
+
   // ----- IMU
   auto imuResult = M5.Imu.begin();
   if (imuResult)
@@ -77,11 +80,18 @@ void setup()
   }
   else
   {
-    Serial.println("\nIMU is disabled.");
+    Serial.println("\nIMU is disabled...");
   }
 
-  // ----- Battery
-  M5.Power.begin();
+  // ----- BMP280 : Pressure / Temperature sensor
+  if (!bmp280.begin())
+  {
+    Serial.println("\n BMP280 start Failure...");
+  }
+  else
+  {
+    Serial.println("\nBMP280 is ready.");
+  }
 
   // ----- SDカードの初期化
   cardHandler = new SDcardHandler();
@@ -89,18 +99,12 @@ void setup()
   {
     // Print a message if SD card initialization failed or if the SD card does not exist.
     M5.Display.print("\n SD card not detected\n");
-    Serial.print("\n SD card not detected\n");
+    Serial.println("\n SD card not detected");
   }
   else
   {
     M5.Display.print("\nSD card detected\n");
-    Serial.print("\nSD card detected\n");
-  }
-
-  // ----- BMP280 : Pressure / Temperature sensor
-  if (!bmp280.begin())
-  {
-    Serial.print("\n BMP280 start Failure...\n\n");
+    Serial.println("\nSD card detected");
   }
 
   // GPSモジュールとの接続 (NEO-M9N)
@@ -124,7 +128,7 @@ void setup()
       int levelIndex = String(dirNameIndex[index]).toInt();
       storedZoomLevelList[levelIndex] = true;
     }
-    Serial.print("\nSupported Zoom level: ");
+    Serial.print("  Zoom level: ");
     for (int index = 0; index < MAX_ZOOM_COUNT; index++)
     {
       if (storedZoomLevelList[index] == true)
@@ -133,7 +137,7 @@ void setup()
         Serial.print(" ");
       }
     }
-    Serial.println("");
+    Serial.println("\n");
   }
   else
   {
@@ -152,6 +156,7 @@ void setup()
   detailDrawer = new ShowDetailInfo();
 
   //----- setup() が終了したことを画面とシリアルに通知する
+  delay(300); // 少し待つ
 
   //  シリアルで通知
   Serial.println("- - - - - - ");
@@ -167,7 +172,7 @@ void setup()
   M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   M5.Display.println("GOKIGEN Project");    
   needClearScreen = true;
-  Serial.println("- - - - -\n");
+  Serial.println("- - - - - - \n");
 
   delay(2000); // 少し待つ
 }

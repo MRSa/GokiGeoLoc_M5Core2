@@ -1,9 +1,9 @@
 # GokiGeoLoc_M5Core2
 
-[M5Stack Core2](https://docs.m5stack.com/ja/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
+[M5Stack Core2](https://docs.m5stack.com/en/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
 
 - [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)
-- [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module)
+- [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module)
 
 ## 機能
 
