@@ -1,13 +1,13 @@
 # GokiGeoLoc_M5Core2
 
-M5Stack Core2 に GNSS module(M135) をつなげて、地図と災危情報を見えるようにしてみた
+[M5Stack Core2](https://docs.m5stack.com/ja/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
 
 - [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)
 - [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module)
 
 ## 機能
 
-初期表示は、「地図表示」モードです。ズームレベルは16をデフォルトにしています。
+以下に画面イメージを示します。初期表示は、「地図表示」モードです。ズームレベルは16をデフォルトにしています。
 
 ![画面イメージ](https://github.com/MRSa/GokiGeoLoc_M5Core2/blob/main/images/gok_geo_loc.png?raw=true)
 
@@ -29,6 +29,21 @@ M5Stack Core2 に GNSS module(M135) をつなげて、地図と災危情報を�
 地図をまったりダウンロードする batファイルが、 getGSImaps/GsiMap/（ズームレベル） の下に置いてありますので、参考にしていただけると幸いです。
 
 SDカードは、FAT32形式でフォーマットしてください。（FAT32形式でフォーマットされている microSDカードであれば、128GBでも認識するようです。）
+
+## 画面説明
+
+### 地図表示
+
+衛星から拾った現在位置を地図の中心に表示します。合わせて、内臓センサの情報（気温と気圧）を表示します。
+
+### 災危通報の表示
+
+衛星（みちびき）から送られてくる、災危通報という情報を表示します。最大300件程度記憶しています。
+なお、受信情報は電源を入れている間だけ記憶しています。電源をOFFすると忘れます。
+
+### 詳細表示（文字で情報を表示）
+
+センサ情報等を文字で表示します。
 
 ## 参考情報
 
