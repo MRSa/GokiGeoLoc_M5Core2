@@ -1,40 +1,41 @@
 # GokiGeoLoc_M5Core2
 
-[M5Stack Core2](https://docs.m5stack.com/ja/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
+[M5Stack Core2](https://docs.m5stack.com/en/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
 
 - [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)
-- [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module)
+- [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module)
 
 ## 機能
 
-以下に画面イメージを示します。初期表示は、「地図表示」モードです。ズームレベルは16をデフォルトにしています。
+以下に画面イメージを示します。初期表示は、「地図表示」モードです。
 
 ![画面イメージ](https://github.com/MRSa/GokiGeoLoc_M5Core2/blob/main/images/gok_geo_loc.png?raw=true)
 
 - **ボタンA** : 地図表示 (現在位置を地図上に表示)
-  - 右上をタッチすると、ズームレベルを変更できます。（複数のズームレベルの地図を入れていた場合）
+  - 複数のズームレベルの地図をSDカードに入れていた場合、右上(Zマーク)をタッチすると、ズームレベルを変更できます。
 - **ボタンB** : 受信した災危通報の表示
-  - 右上をタッチすると、文字のサイズが変わります。情報が多く、画面からはみ出す場合には文字サイズの変更を試してください。
-  - 左半分をタッチすると、前の災危情報を表示します。
-  - 右半分をタッチすると、次の災危情報を表示します。
+  - 右上(Fマーク)をタッチすると、文字のサイズが変わります。情報が多く、画面からはみ出す場合には文字サイズの変更を試してください。
+  - 画面の左半分をタッチすると、前の災危情報を表示します。
+  - 画面の右半分をタッチすると、次の災危情報を表示します。
 - **ボタンC** : 詳細表示 (文字で情報を表示)
-  - 右上をタッチすると、画面の輝度を変えることができます。
+  - 右上(Bマーク)をタッチすると、画面の輝度を変えることができます。だんだん明るくなり、最大輝度になった後は、最小輝度になります。
 
 ## 地図タイルの置き方
 
-地図を表示するためには、あらかじめ国土地理院の[地理院タイル](https://maps.gsi.go.jp/development/siyou.html)をダウンロードし、SDカードに置いておく必要があります。
-あらかじめ、SDカードに **/GsiMap** フォルダを作成し、その下に ズームレベルごと、数字名のサブフォルダを作成、その下に地理院地図のマップタイル画像（png形式の地図）を置きます。（例： /GsiMap/16/58180/25822.png  ← 地理院地図のズームレベル 16 の X:58180, Y:25822 である、png形式のタイル画像）
+地図を表示するためには、あらかじめ国土地理院の[地理院タイル](https://maps.gsi.go.jp/development/siyou.html)の画像をダウンロードし、SDカードに置いておく必要があります。
+あらかじめ、SDカードに **/GsiMap** フォルダを作成し、その下に ズームレベルごと、数字名のサブフォルダを作成、その下に地理院地図のマップタイル画像（png形式の地図）を置きます。
+（例： /GsiMap/16/58180/25822.png  ← 地理院地図のズームレベル 16 の X:58180, Y:25822 である、png形式のタイル画像）
 
 ズームレベルは16をデフォルトにしていますので、ズームレベル 16の地図をSDカードに格納することが望ましいです。
 地図をまったりダウンロードする batファイルが、 getGSImaps/GsiMap/（ズームレベル） の下に置いてありますので、参考にしていただけると幸いです。
 
-SDカードは、FAT32形式でフォーマットしてください。（FAT32形式でフォーマットされている microSDカードであれば、128GBでも認識するようです。）
+SDカードは、FAT32形式でフォーマットしてください。FAT32形式でフォーマットされている microSDカードであれば、128GBでも認識するようです。
 
 ## 画面説明
 
 ### 地図表示
 
-衛星から拾った現在位置を地図の中心に表示します。合わせて、内臓センサの情報（気温と気圧）を表示します。
+衛星から拾った現在位置を地図の中心に表示します。合わせて、内臓センサの情報（気温と気圧）を表示します。なお、地図のズームレベルは16をデフォルトにしています。
 
 ### 災危通報の表示
 
@@ -47,24 +48,39 @@ SDカードは、FAT32形式でフォーマットしてください。（FAT32�
 
 ## 参考情報
 
-- [M5Unifiedライブラリの始め方](https://docs.m5stack.com/ja/arduino/m5unified/helloworld)
-  - [M5Unified](https://github.com/m5stack/M5Unified)
-- [M5GFX Setup](https://docs.m5stack.com/ja/arduino/m5gfx/m5gfx)
-  - [M5GFX](https://github.com/M5Stack/M5GFX)
+### 地図関連
+
 - [地理院地図](https://maps.gsi.go.jp/help/howtouse.html)
 - [地理院タイルの仕様](https://maps.gsi.go.jp/development/siyou.html)
 - [地理院タイルのご利用について](https://maps.gsi.go.jp/development/ichiran.html)
 - [国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
 - [タイル座標確認ページ(地理院地図)](https://maps.gsi.go.jp/development/tileCoordCheck.html#16/35.6104/139.5950)
+
+### 災危通報関連
+
 - [みちびき 災害・危機管理通報サービス](https://qzss.go.jp/technical/system/dcr.html)
 - [みちびき 災害・危機管理通報サービス（拡張）のサービス開始及び共通EWSメッセージフォーマットの採用について](https://qzss.go.jp/info/information/dcx_240401.html)
 - [ユーザインタフェース仕様書（IS-QZSS）: IS-QZSS-DCR-xxx および IS-QZSS-DCX-xxx](https://qzss.go.jp/technical/download/ps-is-qzss.html)
 - [災害・危機管理通報サービス 試験用データ配信](https://qzss.go.jp/technical/dod/dc-report/test-data-distribution.html)
+- [災害・危機管理通報サービス（拡張）試験用データ配信](https://qzss.go.jp/technical/dod/dc-report/dcx-test-data-distribution.html)
+
+- [u-blox GNSSモジュール+ESP32でみちびき（QZSS）の「災危通報」情報を受信する](https://qiita.com/ta-oot/items/d721de91bfcbd952574b)
+  - QZQSM: [https://github.com/baggio63446333/QZQSM](https://github.com/baggio63446333/QZQSM)
 - [GPSシールドを使ってみちびき（QZSS）の災害・危機管理通報サービス（DC Report・DCX）を受信してみた。](https://www.switch-science.com/blogs/magazine/gps-qzss-dc-report-dcx-receiving)
   - QZSSDCX: [https://github.com/SWITCHSCIENCE/QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
--[u-blox GNSSモジュール+ESP32でみちびき（QZSS）の「災危通報」情報を受信する](https://qiita.com/ta-oot/items/d721de91bfcbd952574b)
-  - QZQSM: [https://github.com/baggio63446333/QZQSM](https://github.com/baggio63446333/QZQSM)
-- [Unit Mini IMU-Pro](https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit)
-  - [https://github.com/m5stack/M5Unit-IMU-Pro-Mini/](https://github.com/m5stack/M5Unit-IMU-Pro-Mini/)
+
+### プログラミング関連
+
+- [M5Unifiedライブラリの始め方](https://docs.m5stack.com/ja/arduino/m5unified/helloworld)
+  - [M5Unified](https://github.com/m5stack/M5Unified)
+  - [M5Unified IMU Class](https://docs.m5stack.com/en/arduino/m5unified/imu_class)
+  - [IMU sample Code](https://github.com/m5stack/M5Unified/blob/master/examples/Basic/Imu/Imu.ino)
+- [M5GFX Setup](https://docs.m5stack.com/ja/arduino/m5gfx/m5gfx)
+  - [M5GFX](https://github.com/M5Stack/M5GFX)
+
+### センサー関連
+
 - [Adafruit_BMP280_Library](https://github.com/adafruit/Adafruit_BMP280_Library/tree/master)
-- [BMP280 Digital Pressure Sensor](https://cdn-shop.adafruit.com/datasheets/BST-BMP280-DS001-11.pdf)
+- [BMP280 Digital Pressure Sensor(datasheet)](https://cdn-shop.adafruit.com/datasheets/BST-BMP280-DS001-11.pdf)
+- [u-blox Protocol Specification](https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/docs/products/module/GNSS%20Module/u-blox8-M8_ReceiverDescrProtSpec__UBX-13003221__Public.pdf)
+- [u-blox u-center](https://www.u-blox.com/en/product/u-center)

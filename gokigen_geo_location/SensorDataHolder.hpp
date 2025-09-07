@@ -1,3 +1,4 @@
+
 class SensorDataHolder
 {
 private:
@@ -7,7 +8,8 @@ private:
   double _pressure = 0.0d;     // 圧力
   double _altitude = 0.0d;     // 高度
   double _waterBoilingPoint = 100.0d; // 沸点
-  m5::imu_data_t _imuData;
+  float _imuTemperature = 0.0f;  // 温度(IMU)
+  m5::imu_data_t _imuData;     // IMUデータ
   uint8_t _batteryLevel = 0;   // バッテリ残量
   struct tm _timeInfo;         // 時刻情報
 
@@ -17,11 +19,11 @@ public:
   }
 
   uint8_t getBatteryLevel() { return _batteryLevel; }
+  float getImuTemperature() { return _imuTemperature;  }
   double getTemperature() { return _temperature; }
   double getPressure() { return _pressure; }
   double getAltitude() { return _altitude; }
   double getWaterBoilingPoint() { return _waterBoilingPoint; } 
-
   float getAccelX() { return _imuData.accel.x; }  // 重力加速度 (X軸)
   float getAccelY() { return _imuData.accel.y; }  // 重力加速度 (Y軸)
   float getAccelZ() { return _imuData.accel.z; }  // 重力加速度 (Z軸)
@@ -52,6 +54,7 @@ public:
     if (M5.Imu.update() > 0)
     {
       M5.Imu.getImuData(&_imuData);
+      M5.Imu.getTemp(&_imuTemperature);
     }
     
     // 現在時刻を取得
@@ -60,4 +63,5 @@ public:
       Serial.println("--- Failed to obtain time ---");
     }
   }
+
 };

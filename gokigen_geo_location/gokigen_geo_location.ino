@@ -16,6 +16,7 @@ void applyDateTime();   // GPSから受信した時刻をシステムに設定�
 
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
+#include "CalculateMD5Hash.hpp"
 
 #include "MyBmp280Sensor.hpp"
 #include "GsiTileCoordinate.hpp"
@@ -53,7 +54,7 @@ void setup()
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
   cfg.internal_imu = true;
-  cfg.external_imu = true;
+  cfg.external_imu = false;
   M5.begin(cfg);
 
   // ----- Display
@@ -63,15 +64,36 @@ void setup()
   M5.Display.setTextSize(2);
   M5.Display.println("Initializing");
 
-  // ----- IMU
-  M5.Imu.begin();
+  // ----- PCとのシリアル通信
+  Serial.begin(SERIAL_BAUDRATE_PC);
+  Serial.println("Initializing...\n");
 
   // ----- Battery
   M5.Power.begin();
 
-  // ----- PCとのシリアル通信
-  Serial.begin(SERIAL_BAUDRATE_PC);
-  Serial.println("Initializing...");
+  // ----- IMU
+  M5.Imu.loadOffsetFromNVS();
+  auto imuResult = M5.Imu.begin();
+  if (imuResult)
+  {
+    auto imuType = M5.Imu.getType(); 
+    Serial.print("IMU is ready. : ");
+    Serial.println(imuType, HEX); // m5::imu_t::imu_bmi270 == 6
+  }
+  else
+  {
+    Serial.println("  IMU is disabled...");
+  }
+
+  // ----- BMP280 : Pressure / Temperature sensor
+  if (!bmp280.begin())
+  {
+    Serial.println("  BMP280 start Failure...");
+  }
+  else
+  {
+    Serial.println("BMP280 is ready.");
+  }
 
   // ----- SDカードの初期化
   cardHandler = new SDcardHandler();
@@ -79,20 +101,12 @@ void setup()
   {
     // Print a message if SD card initialization failed or if the SD card does not exist.
     M5.Display.print("\n SD card not detected\n");
-    Serial.print("\n SD card not detected\n");
+    Serial.println("  SD card not detected");
   }
   else
   {
     M5.Display.print("\nSD card detected\n");
-    Serial.print("\nSD card detected\n");
-  }
-
-
-  // ----- BMP280 : Pressure / Temperature sensor
-  delay(300); // 少し待つ
-  if (!bmp280.begin())
-  {
-    Serial.print("\n BMP280 start Failure...\n\n");
+    Serial.println("SD card detected");
   }
 
   // GPSモジュールとの接続 (NEO-M9N)
@@ -116,7 +130,7 @@ void setup()
       int levelIndex = String(dirNameIndex[index]).toInt();
       storedZoomLevelList[levelIndex] = true;
     }
-    Serial.print("\nSupported Zoom level: ");
+    Serial.print("Zoom level: ");
     for (int index = 0; index < MAX_ZOOM_COUNT; index++)
     {
       if (storedZoomLevelList[index] == true)
@@ -129,7 +143,7 @@ void setup()
   }
   else
   {
-    Serial.println("The SD card can not access.");
+    Serial.println("  The SD card can not access.");
   }
 
   // ----- センサデータ保持クラスの準備 
@@ -144,10 +158,11 @@ void setup()
   detailDrawer = new ShowDetailInfo();
 
   //----- setup() が終了したことを画面とシリアルに通知する
+  delay(300); // 少し待つ
 
   //  シリアルで通知
-  Serial.println("- - - - - - ");
-  Serial.println("  Initialization finished");
+  Serial.println("\n- - - - - - ");
+  Serial.println("Initialization finished");
 
   // 画面に表示
   M5.Display.clear();
@@ -159,9 +174,9 @@ void setup()
   M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   M5.Display.println("GOKIGEN Project");    
   needClearScreen = true;
-  Serial.println("- - - - -\n");
+  Serial.println("- - - - - - \n");
 
-  delay(2000); // 少し待つ
+  delay(1600); // 少し待つ
 }
 
 void loop()
