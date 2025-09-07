@@ -16,6 +16,7 @@ void applyDateTime();   // GPSから受信した時刻をシステムに設定�
 
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
+#include "CalculateMD5Hash.hpp"
 
 #include "MyBmp280Sensor.hpp"
 #include "GsiTileCoordinate.hpp"
@@ -175,7 +176,7 @@ void setup()
   needClearScreen = true;
   Serial.println("- - - - - - \n");
 
-  delay(2000); // 少し待つ
+  delay(1600); // 少し待つ
 }
 
 void loop()

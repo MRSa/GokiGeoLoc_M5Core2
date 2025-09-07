@@ -85,7 +85,7 @@ public:
       }
       else if ((posX > 280)&&(posY < 210))
       {
-        // 右上をタッチすることで、センサのキャリブレーションに入る
+        // 右下をタッチすることで、センサのキャリブレーションに入る
 
         // ----- バイブレーション
         makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);

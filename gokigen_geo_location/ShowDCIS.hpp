@@ -1,6 +1,8 @@
 
-#include <QZSSDCX.h>
-#include <QZQSM.h>
+#include <QZQSM.h>    // https://github.com/baggio63446333/QZQSM
+#include <QZSSDCX.h>  // https://github.com/SWITCHSCIENCE/QZSSDCX
+
+#include "MyStringStream.hpp"
 
 #define QZSS_DCWORD_INDEX 10
 #define QZSS_DCMESSAGE_INDEX 14
@@ -92,13 +94,15 @@ private:
         }
         else
         {
+          MyStringStream dcxMessage(16384);
           Serial.println("DCX: ");
-          _dcx_decoder.printSummary(Serial, _dcx_decoder.r);
+          _dcx_decoder.printSummary(dcxMessage, _dcx_decoder.r);
+          Serial.println(dcxMessage.getString().c_str());
           Serial.println("- - -");
-          _dcx_decoder.printAll(Serial, _dcx_decoder.r);
+          //_dcx_decoder.printAll(Serial, _dcx_decoder.r);
           //_dcx_decoder.printSummary(&M5.Display, _dcx_decoder.r);
           //_dcx_decoder.printAll(&M5.Display, _dcx_decoder.r);
-          M5.Display.printf("DCX : ...\r\n");
+          M5.Display.printf("[DCX]\r\n%s", dcxMessage.getString().c_str());
         }
       }
       else
