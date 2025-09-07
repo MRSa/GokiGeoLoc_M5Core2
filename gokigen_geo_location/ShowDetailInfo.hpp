@@ -1,9 +1,10 @@
+#include "ImuCalibration.hpp"
 
 class ShowDetailInfo
 {
 
 private:
-
+  ImuCalibration calibrator;
 
 public:
   ShowDetailInfo()
@@ -22,15 +23,36 @@ public:
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.printf("## 詳細情報 ##\r\n");
 
-    // ----- 操作領域にマーキング
+    // ----- 操作領域にマーキング 
+    // (輝度の変更)
     M5.Display.setTextSize(1);
     M5.Display.setFont(&fonts::efontJA_14_b);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.setCursor(308,0);
     M5.Display.printf("B");
     M5.Display.drawRect(304,0, 15,15, TFT_WHITE);
-
+    // (キャリブレーションの実行)
     M5.Display.setTextSize(1);
+    M5.Display.setFont(&fonts::efontJA_14_b);
+    if (calibrator.isCalibrating())
+    {
+      // ----- キャリブレーション実行中
+      M5.Display.fillRect(250,222, 50,17, TFT_WHITE);
+      M5.Display.setTextColor(TFT_BLACK, TFT_WHITE);
+    }
+    else
+    {
+      // ---- キャリブレーション未実行
+      M5.Display.fillRect(250,222, 50,17, TFT_BLACK);  
+      M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    }
+    M5.Display.setCursor(254,223);
+    M5.Display.printf("Calib.");
+    M5.Display.drawRect(250,222, 50,17, TFT_WHITE);
+
+    // ----- 各種情報の表示
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.setFont(&fonts::efontJA_16);
     M5.Display.setCursor(0,20);
     displayCurrentJstTime("時刻: ", dataHolder->getTimeInfo());
@@ -43,10 +65,11 @@ public:
     M5.Display.printf("重力: X:%-2.1f y:%-2.1f z:%-2.1f       \r\n", dataHolder->getAccelX(), dataHolder->getAccelY(), dataHolder->getAccelZ());
     M5.Display.printf("傾き: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getGyroX(), dataHolder->getGyroY(), dataHolder->getGyroZ());
     M5.Display.printf("磁力: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
+    //M5.Display.printf("磁力: X:%f y:%f z:%f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
     M5.Display.printf("輝度: %02x\r\n", getDisplayBrightness());
 
-    // ----- ディスプレイの明るさ変更 -----
+    // ----- 画面タッチ時の操作 -----
     if (touchPos->isPressed())
     {
       //----- タッチパネルが押されたことを検出
@@ -60,9 +83,21 @@ public:
         // ----- バイブレーション
         makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
       }
+      else if ((posX > 280)&&(posY < 210))
+      {
+        // 右上をタッチすることで、センサのキャリブレーションに入る
+
+        // ----- バイブレーション
+        makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+
+        // ----- センサのキャリブレーションを実行
+        calibrator.executeCalibration(101);
+      }
 
       // ---- 開放する
       touchPos->resetPosition();
     }
+    // ----- キャリブレーション中 or 実行のためのトリガをクラスに入力
+    calibrator.continueCalibration();
   }
 };

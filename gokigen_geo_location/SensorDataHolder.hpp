@@ -1,3 +1,4 @@
+
 class SensorDataHolder
 {
 private:
@@ -54,7 +55,6 @@ public:
     {
       M5.Imu.getImuData(&_imuData);
       M5.Imu.getTemp(&_imuTemperature);
-      M5.Imu.getMag(&_imuData.mag.x, &_imuData.mag.y, &_imuData.mag.z);  // 仮... getImuData()で取得できるはず
     }
     
     // 現在時刻を取得
@@ -63,4 +63,5 @@ public:
       Serial.println("--- Failed to obtain time ---");
     }
   }
+
 };

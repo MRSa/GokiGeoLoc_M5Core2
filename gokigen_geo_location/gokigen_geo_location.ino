@@ -65,18 +65,19 @@ void setup()
 
   // ----- PCとのシリアル通信
   Serial.begin(SERIAL_BAUDRATE_PC);
-  Serial.println("Initializing...");
+  Serial.println("Initializing...\n");
 
   // ----- Battery
   M5.Power.begin();
 
   // ----- IMU
+  M5.Imu.loadOffsetFromNVS();
   auto imuResult = M5.Imu.begin();
   if (imuResult)
   {
-    auto imuMask = M5.Imu.update();    
-    Serial.print("IMU is ready. : 0x");
-    Serial.println(imuMask, HEX);
+    auto imuType = M5.Imu.getType(); 
+    Serial.print("IMU is ready. : ");
+    Serial.println(imuType, HEX); // m5::imu_t::imu_bmi270 == 6
   }
   else
   {
