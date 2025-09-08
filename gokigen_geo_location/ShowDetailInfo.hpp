@@ -56,10 +56,25 @@ public:
     M5.Display.setFont(&fonts::efontJA_16);
     M5.Display.setCursor(0,20);
     displayCurrentJstTime("時刻: ", dataHolder->getTimeInfo());
-
-    // M5.Display.printf("衛星: %d\r\n", gps.satellites.value());
-    M5.Display.printf("緯度: %.6f\r\n経度: %.6f\r\n高度: %.2f m (BMP280: %.2f m)       \r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters(), dataHolder->getAltitude());
-    M5.Display.printf("気温: %.1f ℃ (IMU: %.1f ℃)      \r\n", dataHolder->getTemperature(), dataHolder->getImuTemperature());
+    if (!gps.location.isValid())
+    {
+      if ((!gps.date.isValid())&&(!gps.time.isValid())&&(!gps.hdop.isValid()))
+      {
+        // ----- 衛星からの電波を受信できていない場合
+        M5.Display.printf("衛星: 無効(%2d)  \r\n", gps.satellites.value());
+      }
+      else
+      {
+        // ----- 衛星からの電波を受信できているが、十分でない場合
+        M5.Display.printf("衛星: 受信(%2d)  \r\n", gps.satellites.value());        
+      }
+    }
+    else
+    {
+      M5.Display.printf("衛星: 有効(%2d)  \r\n", gps.satellites.value());      
+    }
+    M5.Display.printf("緯度: %3.6f  経度: %3.6f      \r\n高度: %.2f m (BMP280: %.2f m)       \r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters(), dataHolder->getAltitude());
+    M5.Display.printf("気温: %.1f ℃ (BMI270: %.1f ℃)      \r\n", dataHolder->getTemperature(), dataHolder->getImuTemperature());
     M5.Display.printf("気圧: %.1f hPa\r\n", (dataHolder->getPressure() / 100.0d));
     // M5.Display.printf("沸点: %.1f ℃\r\n", dataHolder->getWaterBoilingPoint());   // 取得してみたが、、、あきらかに値がおかしいので取得をやめる
     M5.Display.printf("重力: X:%-2.1f y:%-2.1f z:%-2.1f       \r\n", dataHolder->getAccelX(), dataHolder->getAccelY(), dataHolder->getAccelZ());

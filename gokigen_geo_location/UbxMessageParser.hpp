@@ -3,13 +3,12 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 280
-#define MAX_STORE_MESSAGE_SIZE 500  // 過去のメッセージ保持数
+#define MAX_STORE_MESSAGE_SIZE 600  // 過去のメッセージ保持数
 #define MD5_HASH_BUFFER_SIZE 16
 class UbxMessageParser
 {
 private:
   DCXDecoder _dcx_decoder;
-  CalculateMD5Hash _hashCalculator;
 
   // UBXメッセージ受信時のデータ格納バッファ
   int _currentUbxMessageIndex = 0;
@@ -18,7 +17,7 @@ private:
   uint8_t _nofDcrMessage = 0;
   uint8_t _nofDcrMessageIndex = 0;
   uint8_t _QZSSdcrMessage[MAX_STORE_MESSAGE_SIZE][UBX_BUFFER_SIZE + 1];
-  uint8_t _QZSSdcrMessageHash[MAX_STORE_MESSAGE_SIZE][MD5_HASH_BUFFER_SIZE];
+  struct tm _QZSSdcrReceiveDateTime[MAX_STORE_MESSAGE_SIZE];
 
   void _dumpReceivedMessage()
   {
@@ -98,7 +97,6 @@ private:
       // PAB(preanble)がパターンA(0x53), パターンB(0x9A), パターンC(0xC6)でかつ、
       // MT(MessageType) が 43(DCR) または MT:44(DCX) 以外のデータは保管しない。
       // (詳細は、仕様書 IS-QZSS-L1S-xxx 参照)
-
       if (mt == 43)
       {
         // DCRメッセージ(気象情報等)を受信した
@@ -124,21 +122,6 @@ private:
         return (true);
       }
     }
-    return (false);
-  }
-
-  bool _checkHashValue(uint8_t *hashVal)
-  {
-    // ----- 指定されたHASH値が、すでに受信したメッセージに含まれていないかを確認する
-    // ----- 将来的には、ここで、ダブらず必要なメッセージのみとなるよう、重複しているかどうかを判定したい
-
-    // ----- デバッグ用...ハッシュ値をシリアルに出力する
-    Serial.print(" MD5: ");
-    for (int index = 0; index < MD5_HASH_BUFFER_SIZE; index++)
-    {
-      Serial.print(hashVal[index], HEX);
-    }
-    Serial.println(" ");
     return (false);
   }
 
@@ -220,27 +203,20 @@ public:
     // ----- QZSS サブフレームメッセージを保管する (前回データを消してから上書きする)
     if (_isStoreQZSSMessage())
     {
-      // ----- 受信データのハッシュ値を計算する
-      uint8_t hashVal[MD5_HASH_BUFFER_SIZE];
-      _hashCalculator.calculate_MD5(_ubxMessageBuffer, totalMessageLength, hashVal);
-      if (!_checkHashValue(hashVal))
-      {
-        memset(_QZSSdcrMessage[_nofDcrMessageIndex], 0x00, (UBX_BUFFER_SIZE + 1));
-        memcpy(_QZSSdcrMessage[_nofDcrMessageIndex], _ubxMessageBuffer, totalMessageLength);        
-        memcpy(_QZSSdcrMessageHash[_nofDcrMessageIndex], hashVal, MD5_HASH_BUFFER_SIZE);
+      memset(_QZSSdcrMessage[_nofDcrMessageIndex], 0x00, (UBX_BUFFER_SIZE + 1));
+      memcpy(_QZSSdcrMessage[_nofDcrMessageIndex], _ubxMessageBuffer, totalMessageLength);
 
-        Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.println(" bytes.");
-        _nofDcrMessageIndex++;
-        if (_nofDcrMessage < MAX_STORE_MESSAGE_SIZE)
-        {
-          // 保管メッセージ数をインクリメント（最大数までたまっていたら更新しない）
-          _nofDcrMessage++;
-        }
-      }
-      else
+      // ----- 受信日時を保管する
+      struct tm currentTime;
+      getLocalTime(&currentTime);
+      memcpy(&_QZSSdcrReceiveDateTime[_nofDcrMessageIndex], &currentTime, sizeof(struct tm));
+
+      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.println(" bytes.");
+      _nofDcrMessageIndex++;
+      if (_nofDcrMessage < MAX_STORE_MESSAGE_SIZE)
       {
-        // ----- すでに受信して保管しているメッセージだったので格納しない
-        Serial.println("  The message is already received.");
+        // 保管メッセージ数をインクリメント（最大数までたまっていたら更新しない）
+        _nofDcrMessage++;
       }
 
       if (_nofDcrMessageIndex >= MAX_STORE_MESSAGE_SIZE)
@@ -274,6 +250,11 @@ public:
   int getMessageBufferSize()
   {
     return MAX_STORE_MESSAGE_SIZE;
+  }
+
+  struct tm *getQZSSdcrReceivedDateTime(int index)
+  {
+    return (&_QZSSdcrReceiveDateTime[index]);    
   }
 
   uint8_t *getQZSSdcrMessage(int index)
