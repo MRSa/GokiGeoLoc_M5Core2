@@ -80,6 +80,9 @@ public:
       M5.Display.setCursor(0,105);
       M5.Display.printf("気温:\r\n %.1f ℃\r\n", dataHolder->getTemperature());
 
+      // ----- コンパス等表示エリア
+      //M5.Display.drawRect(15, 142, 60, 60, TFT_WHITE); // X: 0-95(最大) Y:60(最大)
+
       M5.Display.setCursor(0,205);
       M5.Display.setFont(&fonts::efontJA_14);
       M5.Display.printf("Zoom: %2d\r\n", _zoomLevel);
@@ -102,6 +105,16 @@ public:
         Serial.print(",");
         Serial.print(touchPos->getTouchY());
         Serial.println("]");
+
+        // ---- コンパス表示エリア(仮)が押されたとき
+        if ((posX < 95)&&(posY > 140)&&(posY < 210))
+        {
+          // ----- そのうち処理を入れたい
+          Serial.println("Pushed the area.");
+
+          // ---- 開放する
+          touchPos->resetPosition();
+        }
 
         // ===== 左上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
         if ((posX > 280)&&(posY < 60))
