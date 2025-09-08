@@ -179,6 +179,7 @@ public:
       _applyFontSize();
       M5.Display.setCursor(0,45);
       M5.Display.setTextSize(1);
+      displayCurrentJstTime("受信日時： ", messageParser->getQZSSdcrReceivedDateTime(_messageIndex));
       _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
       _isDumped = true;
     }
