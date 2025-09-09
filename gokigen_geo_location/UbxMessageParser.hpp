@@ -82,7 +82,7 @@ private:
     // --------- 受信した QZSSメッセージを保管しておくかどうか判断する
     uint8_t numWords = _ubxMessageBuffer[10];   // ワード数
     uint8_t dcr[numWords * 4];                  // サブフレームデータの格納先
-    for (int i = 0; i < numWords * 4; i += 4) // 1ワードごとに処理
+    for (int i = 0; i < numWords * 4; i += 4)   // 1ワードごとに処理
     {
       dcr[i + 0] = _ubxMessageBuffer[14 + i + 3];
       dcr[i + 1] = _ubxMessageBuffer[14 + i + 2];
@@ -210,9 +210,10 @@ public:
       struct tm currentTime;
       getLocalTime(&currentTime);
       memcpy(&_QZSSdcrReceiveDateTime[_nofDcrMessageIndex], &currentTime, sizeof(struct tm));
-
-      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.println(" bytes.");
       _nofDcrMessageIndex++;
+
+      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.print(" bytes.  ");
+      Serial.print(_nofDcrMessageIndex); Serial.print("/"); Serial.println(_nofDcrMessage);
       if (_nofDcrMessage < MAX_STORE_MESSAGE_SIZE)
       {
         // 保管メッセージ数をインクリメント（最大数までたまっていたら更新しない）
