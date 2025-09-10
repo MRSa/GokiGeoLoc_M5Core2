@@ -3,8 +3,7 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 280
-#define MAX_STORE_MESSAGE_SIZE 600  // 過去のメッセージ保持数
-#define MD5_HASH_BUFFER_SIZE 16
+#define MAX_STORE_MESSAGE_SIZE 800  // 過去のメッセージ保持数
 class UbxMessageParser
 {
 private:
@@ -14,8 +13,8 @@ private:
   int _currentUbxMessageIndex = 0;
   uint8_t _ubxMessageBuffer[UBX_BUFFER_SIZE + 1];
 
-  uint8_t _nofDcrMessage = 0;
-  uint8_t _nofDcrMessageIndex = 0;
+  uint16_t _nofDcrMessage = 0;
+  uint16_t _nofDcrMessageIndex = 0;
   uint8_t _QZSSdcrMessage[MAX_STORE_MESSAGE_SIZE][UBX_BUFFER_SIZE + 1];
   struct tm _QZSSdcrReceiveDateTime[MAX_STORE_MESSAGE_SIZE];
 
