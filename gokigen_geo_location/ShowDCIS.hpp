@@ -171,11 +171,18 @@ public:
     M5.Display.printf("受信メッセージ： %3d/%3d\r\n", (_messageIndex + 1), messageCount);
 
     // ----- メッセージの移動タッチ位置のマーク
-    //M5.Display.setCursor(308,0);
-    //M5.Display.printf("F");
-    M5.Display.drawRect(304,30, 15,15, TFT_WHITE);
-    M5.Display.drawRect(264,30, 15,15, TFT_WHITE);
-    M5.Display.drawRect(224,30, 15,15, TFT_WHITE);
+    M5.Display.drawLine(224, 28, 239, 43);
+    M5.Display.fillTriangle(224, 35, 239, 28, 239, 43);
+    //M5.Display.drawRect(224,28, 15,15, TFT_WHITE);
+
+    M5.Display.setFont(&fonts::efontJA_14);
+    M5.Display.setCursor(265,29);
+    M5.Display.printf("今");
+    M5.Display.drawRect(264,28, 15,15, TFT_WHITE);
+
+    M5.Display.drawLine(319, 28, 319, 43);
+    M5.Display.fillTriangle(319, 35, 304, 28, 304, 43);
+    //M5.Display.drawRect(304,28, 15,15, TFT_WHITE);
 
     // ----- メッセージのフォントサイズを決定する
 
@@ -210,19 +217,19 @@ public:
         }
         _makeVibration = true;
       }
-      else if ((posX > 280)&&(posY > 30)&&(posY < 60))
+      else if ((posX > 280)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの右 : 末尾の場所に
         _messageIndex = messageCount - 1;
         _makeVibration = true;
       }
-      else if ((posX > 250)&&(posX < 275)&&(posY > 30)&&(posY < 60))
+      else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの中 : 最新の場所に
         _messageIndex = messageParser->getLastMessageIndex() - 1;
         _makeVibration = true;
       }
-      else if ((posX > 220)&&(posX < 245)&&(posY > 30)&&(posY < 60))
+      else if ((posX > 220)&&(posX < 245)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの左 : 先頭に
 
