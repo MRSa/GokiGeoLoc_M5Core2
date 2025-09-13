@@ -53,8 +53,8 @@ void setup()
   // ----- M5 Unified の初期化処理
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
-  cfg.internal_imu = true;
-  cfg.external_imu = false;
+  cfg.internal_imu = false;
+  cfg.external_imu = true;
   M5.begin(cfg);
 
   // ----- Display
@@ -73,7 +73,10 @@ void setup()
 
   // ----- IMU
   M5.Imu.loadOffsetFromNVS();
-  auto imuResult = M5.Imu.begin();
+  // M5 IMU PRO( https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit )を増設した場合
+  // 使用する場合、Unit GNSSの動作に合わせて、"M5" の刻印面を液晶の向きに合わせる
+  // auto imuResult = M5.Imu.begin(&M5.Ex_I2C);
+  auto imuResult = M5.Imu.begin(&M5.In_I2C);  // Unit GNSS のセンサを利用する場合
   if (imuResult)
   {
     auto imuType = M5.Imu.getType(); 
