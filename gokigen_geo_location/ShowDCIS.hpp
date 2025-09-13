@@ -13,6 +13,7 @@ class ShowDCIS
 private:
   int _fontSize = 3;
   bool _isDumped = false;
+  bool _makeVibration = false;
   int _messageIndex = 0;
   int _isClear = false;
   DCXDecoder _dcx_decoder;
@@ -157,7 +158,7 @@ public:
     }
 
     // ----- 災危通報の表示
-    M5.Display.setCursor(0,20);
+    M5.Display.setCursor(0,22);
     M5.Display.setTextSize(1);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.setFont(&fonts::efontJA_16);
@@ -169,6 +170,20 @@ public:
     M5.Display.setFont(&fonts::efontJA_16);
     M5.Display.printf("受信メッセージ： %3d/%3d\r\n", (_messageIndex + 1), messageCount);
 
+    // ----- メッセージの移動タッチ位置のマーク
+    M5.Display.fillTriangle(257, 35, 272, 28, 272, 43, TFT_WHITE);
+   M5.Display.drawLine(257, 27, 257, 43);
+    //M5.Display.drawRect(224,28, 15,15, TFT_WHITE);
+
+    M5.Display.setFont(&fonts::efontJA_14);
+    M5.Display.setCursor(281,29);
+    M5.Display.printf("今");
+    M5.Display.drawRect(280,27, 16,16, TFT_WHITE);
+
+    M5.Display.drawLine(319, 27, 319, 43);
+    M5.Display.fillTriangle(319, 35, 304, 28, 304, 43);
+    //M5.Display.drawRect(304,28, 15,15, TFT_WHITE);
+
     // ----- メッセージのフォントサイズを決定する
 
     // -----------------------------------------------
@@ -177,7 +192,7 @@ public:
     if (!_isDumped)
     {
       _applyFontSize();
-      M5.Display.setCursor(0,45);
+      M5.Display.setCursor(0,48);
       M5.Display.setTextSize(1);
       displayCurrentJstTime("受信日時： ", messageParser->getQZSSdcrReceivedDateTime(_messageIndex));
       _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
@@ -190,7 +205,8 @@ public:
       //----- タッチパネルが押されたことを検出
       int posX = touchPos->getTouchX();
       int posY = touchPos->getTouchY();
-      if ((posX > 280)&&(posY < 60))
+      _makeVibration = false;
+      if ((posX > 300)&&(posY < 25))
       {
         // --- 右上タッチで、フォントサイズを変更
         _fontSize--;
@@ -199,16 +215,43 @@ public:
           // ---- 最小サイズよりも小さい場合は、最大サイズにする
           _fontSize = 4;
         }
+        _makeVibration = true;
+      }
+      else if ((posX > 304)&&(posY > 27)&&(posY < 60))
+      {
+        // ----- 受信メッセージ数の横あたりの右 : 末尾の場所に
+        _messageIndex = messageCount - 1;
+        _makeVibration = true;
+      }
+      else if ((posX > 275)&&(posX < 300)&&(posY > 27)&&(posY < 60))
+      {
+        // ----- 受信メッセージ数の横あたりの中 : 最新の場所に
+        _messageIndex = messageParser->getLastMessageIndex() - 1;
+        _makeVibration = true;
+      }
+      else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
+      {
+        // ----- 受信メッセージ数の横あたりの左 : 先頭に
+
+        _messageIndex = 0;
+        _makeVibration = true;
+      }
+      else if (posY < 70)
+      {
+        // タイトル周辺をタッチした場合には、反応しないようにする
+        _makeVibration = false;
       }
       else if (posX < 160)
       {
-        // 表示メッセージをひとつ減らす
+        // 左半分をタッチ、表示メッセージをひとつ減らす
         _messageIndex--;
+        _makeVibration = true;
       }
       else
       {
-        // 表示メッセージをひとつふやす
+        // 右半分をタッチ、表示メッセージをひとつふやす
         _messageIndex++;
+        _makeVibration = true;
       }
       if (_messageIndex < 0)
       {
@@ -228,13 +271,16 @@ public:
         Serial.println("]");
         _isDumped = false;
       }
-      _isClear = true; // 次回表示でメッセージを消去する
-
       // ----- バイブレーション
-      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+      if (_makeVibration)
+      {
+        _isClear = true; // 次回表示でメッセージを消去する
+        makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+      }
 
       // ---- 開放する
       touchPos->resetPosition();
+      _makeVibration = false;
     }
   }
 };

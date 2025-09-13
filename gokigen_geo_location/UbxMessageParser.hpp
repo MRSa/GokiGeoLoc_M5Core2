@@ -3,8 +3,7 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 280
-#define MAX_STORE_MESSAGE_SIZE 600  // 過去のメッセージ保持数
-#define MD5_HASH_BUFFER_SIZE 16
+#define MAX_STORE_MESSAGE_SIZE 800  // 過去のメッセージ保持数
 class UbxMessageParser
 {
 private:
@@ -14,8 +13,8 @@ private:
   int _currentUbxMessageIndex = 0;
   uint8_t _ubxMessageBuffer[UBX_BUFFER_SIZE + 1];
 
-  uint8_t _nofDcrMessage = 0;
-  uint8_t _nofDcrMessageIndex = 0;
+  uint16_t _nofDcrMessage = 0;
+  uint16_t _nofDcrMessageIndex = 0;
   uint8_t _QZSSdcrMessage[MAX_STORE_MESSAGE_SIZE][UBX_BUFFER_SIZE + 1];
   struct tm _QZSSdcrReceiveDateTime[MAX_STORE_MESSAGE_SIZE];
 
@@ -82,7 +81,7 @@ private:
     // --------- 受信した QZSSメッセージを保管しておくかどうか判断する
     uint8_t numWords = _ubxMessageBuffer[10];   // ワード数
     uint8_t dcr[numWords * 4];                  // サブフレームデータの格納先
-    for (int i = 0; i < numWords * 4; i += 4) // 1ワードごとに処理
+    for (int i = 0; i < numWords * 4; i += 4)   // 1ワードごとに処理
     {
       dcr[i + 0] = _ubxMessageBuffer[14 + i + 3];
       dcr[i + 1] = _ubxMessageBuffer[14 + i + 2];
@@ -210,9 +209,10 @@ public:
       struct tm currentTime;
       getLocalTime(&currentTime);
       memcpy(&_QZSSdcrReceiveDateTime[_nofDcrMessageIndex], &currentTime, sizeof(struct tm));
-
-      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.println(" bytes.");
       _nofDcrMessageIndex++;
+
+      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.print(" bytes.  ");
+      Serial.print(_nofDcrMessageIndex); Serial.print("/"); Serial.println(_nofDcrMessage);
       if (_nofDcrMessage < MAX_STORE_MESSAGE_SIZE)
       {
         // 保管メッセージ数をインクリメント（最大数までたまっていたら更新しない）
