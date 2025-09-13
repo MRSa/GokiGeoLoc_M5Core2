@@ -158,7 +158,7 @@ public:
     }
 
     // ----- 災危通報の表示
-    M5.Display.setCursor(0,20);
+    M5.Display.setCursor(0,22);
     M5.Display.setTextSize(1);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     M5.Display.setFont(&fonts::efontJA_16);
@@ -171,16 +171,16 @@ public:
     M5.Display.printf("受信メッセージ： %3d/%3d\r\n", (_messageIndex + 1), messageCount);
 
     // ----- メッセージの移動タッチ位置のマーク
-    M5.Display.drawLine(224, 28, 239, 43);
-    M5.Display.fillTriangle(224, 35, 239, 28, 239, 43);
+    M5.Display.fillTriangle(257, 35, 272, 28, 272, 43, TFT_WHITE);
+   M5.Display.drawLine(257, 27, 257, 43);
     //M5.Display.drawRect(224,28, 15,15, TFT_WHITE);
 
     M5.Display.setFont(&fonts::efontJA_14);
-    M5.Display.setCursor(265,29);
+    M5.Display.setCursor(281,29);
     M5.Display.printf("今");
-    M5.Display.drawRect(264,28, 15,15, TFT_WHITE);
+    M5.Display.drawRect(280,27, 16,16, TFT_WHITE);
 
-    M5.Display.drawLine(319, 28, 319, 43);
+    M5.Display.drawLine(319, 27, 319, 43);
     M5.Display.fillTriangle(319, 35, 304, 28, 304, 43);
     //M5.Display.drawRect(304,28, 15,15, TFT_WHITE);
 
@@ -192,7 +192,7 @@ public:
     if (!_isDumped)
     {
       _applyFontSize();
-      M5.Display.setCursor(0,45);
+      M5.Display.setCursor(0,48);
       M5.Display.setTextSize(1);
       displayCurrentJstTime("受信日時： ", messageParser->getQZSSdcrReceivedDateTime(_messageIndex));
       _doDecodeAndDisplay(messageParser->getQZSSdcrMessage(_messageIndex));
@@ -217,19 +217,19 @@ public:
         }
         _makeVibration = true;
       }
-      else if ((posX > 280)&&(posY > 27)&&(posY < 60))
+      else if ((posX > 304)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの右 : 末尾の場所に
         _messageIndex = messageCount - 1;
         _makeVibration = true;
       }
-      else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
+      else if ((posX > 275)&&(posX < 300)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの中 : 最新の場所に
         _messageIndex = messageParser->getLastMessageIndex() - 1;
         _makeVibration = true;
       }
-      else if ((posX > 220)&&(posX < 245)&&(posY > 27)&&(posY < 60))
+      else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
       {
         // ----- 受信メッセージ数の横あたりの左 : 先頭に
 
