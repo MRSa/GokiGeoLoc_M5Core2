@@ -58,23 +58,15 @@ public:
     displayCurrentJstTime("時刻: ", dataHolder->getTimeInfo());
     if (!gps.location.isValid())
     {
-      if ((!gps.date.isValid())&&(!gps.time.isValid())&&(!gps.hdop.isValid()))
+      if (!gps.hdop.isValid())
       {
         // ----- 衛星からの電波を受信できていない場合
         M5.Display.printf("衛星: 無効(%2d)      \r\n", gps.satellites.value());
       }
       else
       {
-        if (!gps.hdop.isValid())
-        {
-           // ----- 衛星からの電波を受信できているが、十分でない場合
-           M5.Display.printf("衛星: 受信(%2d)      \r\n", gps.satellites.value());
-        }
-        else
-        {
-           // ----- 衛星からの電波を受信できているが、十分でない場合
-           M5.Display.printf("衛星: 時刻有効(%2d)    \r\n", gps.satellites.value());
-        }
+        // ----- 衛星からの電波を受信できているが、十分でない場合
+        M5.Display.printf("衛星: 受信(%2d)      \r\n", gps.satellites.value());
       }
     }
     else
