@@ -5,7 +5,26 @@ class ShowGSIMap
 private:
   GsiMapDrawer *_myCanvas = NULL;
   int _zoomLevel = 16;
-  bool isMapDrawed = false;
+  bool _isMapDrawed = false;
+  float _lastHeading = -1.0f;
+  
+  void _drawCompass(float centerX, float centerY, float radius, float headings)
+  {
+    // ----- 外枠を描画
+    M5.Display.fillRect((centerX - radius), (centerY - radius), (radius * 2.0f), (radius * 2.0f), TFT_BLACK);
+    // M5.Display.drawRect((centerX - radius), (centerY - radius), (radius * 2.0f), (radius * 2.0f), TFT_WHITE);
+    M5.Display.drawCircle(centerX, centerY, radius, TFT_WHITE);
+
+    float radian = (headings - 90.0f) * PI / 180.0f;
+    float x = centerX + radius * cos(radian);
+    float y = centerY + radius * sin(radian);
+
+    // --- 方位の針を赤色で示す
+    M5.Display.drawLine(centerX, centerY, x, y, RED);
+    M5.Display.drawLine(centerX + 1, centerY, x, y, RED);
+    M5.Display.drawLine(centerX, centerY + 1, x, y, RED);
+    // M5.Display.fillTriangle(centerX + 5, centerY + 5, centerX - 5, centerY - 5, x, y, RED);
+  }
 
 public:
   ShowGSIMap()
@@ -24,7 +43,7 @@ public:
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
       M5.Display.printf("## 地図 ##\r\n");
 
-      if ((!gps.location.isUpdated())&&(!isMapDrawed))
+      if ((!gps.location.isUpdated())&&(!_isMapDrawed))
       {
         // ----- 1回地図を描画した後は、「位置特定中」表示はしない
         M5.Display.setCursor(110,30);
@@ -81,7 +100,22 @@ public:
       M5.Display.printf("気温:\r\n %.1f ℃\r\n", dataHolder->getTemperature());
 
       // ----- コンパス等表示エリア
-      //M5.Display.drawRect(15, 142, 60, 60, TFT_WHITE); // X: 0-95(最大) Y:60(最大)
+      if (dataHolder->isEnableGeomagneticSensor())
+      {
+        // ----- 方位を表示
+        float heading = dataHolder->getCompassHeadingDegree(lat, lng);
+        if (abs(_lastHeading - heading) > 1.0f)
+        {
+          // ----- 変位がそれなりにある時だけ、描画し直し
+          _drawCompass(45, 172, 30, heading);
+        }
+        _lastHeading = heading;  // 最新方位を保管
+      }
+      else
+      {
+        // ---- コンパスは表示しないので、領域を黒で塗りつぶし
+        M5.Display.fillRect(15, 142, 60, 60, TFT_BLACK);  // X: 0-95(最大) Y:60(最大)
+      }
 
       M5.Display.setCursor(0,205);
       M5.Display.setFont(&fonts::efontJA_14);
@@ -135,12 +169,12 @@ public:
           touchPos->resetPosition();
         }
       }
-      isMapDrawed = true;
+      _isMapDrawed = true;
     }
     catch (...)
     {
       Serial.println("Picture Load Exception...");
-      isMapDrawed = false;
+      _isMapDrawed = false;
     }
   }
 };
