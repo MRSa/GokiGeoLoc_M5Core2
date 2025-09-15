@@ -82,6 +82,7 @@ private:
         _dc_report.Decode(dcr);
         Serial.print("DCR: ");
         Serial.println(_dc_report.GetReport());
+        Serial.println("- - -");
         M5.Display.printf("%s\r\n", _dc_report.GetReport());
       }
       else if (mt == 44)
@@ -90,7 +91,7 @@ private:
         bool result = _dcx_decoder.decode(dcr);
         if (!result)
         {
-          Serial.println("ERR>DCX DECODE FAILURE...");
+          //Serial.println("ERR>DCX DECODE FAILURE...");
           M5.Display.printf("DCX(Decode ERROR)\r\n");
         }
         else

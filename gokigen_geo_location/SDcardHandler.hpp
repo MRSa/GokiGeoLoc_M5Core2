@@ -27,12 +27,12 @@ public:
     File root = SD.open(dirname);
     if (!root)
     {
-      Serial.println("Failed to open directory");
+      Serial.println("Failed to open directory");  // BEGIN
       return (-1);
     }
     if (!root.isDirectory())
     {
-      Serial.println("Not a directory");
+      Serial.println("Not a directory"); // BEGIN
       return (-1);
     }
     

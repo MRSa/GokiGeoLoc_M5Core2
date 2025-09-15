@@ -28,6 +28,7 @@ void applyDateTime();   // GPSから受信した時刻をシステムに設定�
 #include "ShowGSIMap.hpp"
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
+#include "SendReceivedMessage.hpp"
 
 // ----- GPSのメッセージ処理用
 TinyGPSPlus gps;
@@ -38,6 +39,7 @@ MyBmp280Sensor bmp280(M5.In_I2C);
 // ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
 UbxMessageParser *ubxMessageParser = NULL;
+SendReceivedMessage *sendReceivedMessage = NULL;
 
 ShowGSIMap *gsiMapDrawer = NULL;
 ShowDCIS *dicsDrawer = NULL;
@@ -162,13 +164,16 @@ void setup()
   // ----- タッチ位置を記憶するクラスの準備
   touchPositionHandler = new TouchPositionHandler();
 
+  // ----- データを送信するクラスの準備
+  sendReceivedMessage = new SendReceivedMessage(sensorDataHolder, ubxMessageParser);
+
   // ----- 画面描画クラスの準備
   gsiMapDrawer = new ShowGSIMap();
   dicsDrawer = new ShowDCIS();
   detailDrawer = new ShowDetailInfo();
 
   //----- setup() が終了したことを画面とシリアルに通知する
-  delay(300); // 少し待つ
+  delay(WAIT_DUR); // 少し待つ
 
   //  シリアルで通知
   Serial.println("\n- - - - - - ");
@@ -226,6 +231,21 @@ void loop()
       showDisplayMode = SHOW_DETAIL;
       Serial.println("BtnC: DETAIL MODE");
       makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+    }
+  }
+
+  if (Serial.available() > 0)
+  {
+    // --- コード 0x0a まで読み出す
+    String readString = Serial.readStringUntil(0x0a);
+    if (sendReceivedMessage->checkReceivedString(Serial, readString))
+    {
+      // ----- PCからのコマンドを受け付けた場合
+      Serial.println("");
+      Serial.println("");
+      Serial.println("-=-=-=-=-=-");
+      // そのまま継続
+      //return;
     }
   }
 

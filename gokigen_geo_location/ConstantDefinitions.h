@@ -53,3 +53,6 @@
 #define MAX_ZOOM_COUNT  21
 #define DIR_NAME_BUFFER_SIZE  300
 #define DIRNAME_GSI_MAP_ROOT  "/GsiMap"
+
+// 待ち時間 (ms)
+#define WAIT_DUR 300

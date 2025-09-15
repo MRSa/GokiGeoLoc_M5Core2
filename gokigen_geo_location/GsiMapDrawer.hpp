@@ -84,7 +84,7 @@ private:
         if (!result)
         {
           bufferCanvas.drawPngFile(SD, errTile, 0, 0, _GsiMapSize, _GsiMapSize, 0, 0);
-          Serial.println("ERR>tile1: load Failure.");
+          //Serial.println("ERR>tile1: load Failure.");
           currentTile1X = -1;
           currentTile1Y = -1;
         }
@@ -100,7 +100,7 @@ private:
       if (!result)
       {
         bufferCanvas.drawPngFile(SD, errTile, 0, 0, _GsiMapSize, _GsiMapSize, _GsiMapSize, 0);
-        Serial.println("ERR>tile2: load Failure.");
+        //Serial.println("ERR>tile2: load Failure.");
         currentTile2X = -1;
         currentTile2Y = -1;
       }
@@ -116,7 +116,7 @@ private:
       if (!result)
       {
         bufferCanvas.drawPngFile(SD, errTile, 0, 0, _GsiMapSize, _GsiMapSize, 0, _GsiMapSize);
-        Serial.println("ERR>tile3: load Failure.");
+        //Serial.println("ERR>tile3: load Failure.");
         currentTile3X = -1;
         currentTile3Y = -1;
       }
@@ -132,7 +132,7 @@ private:
       if (!result)
       {
         bufferCanvas.drawPngFile(SD, tile4, 0, 0, _GsiMapSize, _GsiMapSize, _GsiMapSize, _GsiMapSize);
-        Serial.println("ERR>tile4: load Failure.");
+        //Serial.println("ERR>tile4: load Failure.");
         currentTile4X = -1;
         currentTile4Y = -1;
       }

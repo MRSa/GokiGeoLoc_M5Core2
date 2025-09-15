@@ -48,6 +48,13 @@ public:
     {
       return false;
     }
+    float magX = _imuData.mag.x;
+    float magY = _imuData.mag.y;
+    float magZ = _imuData.mag.z;
+    if (!M5.Imu.getMag(&magX, &magY, &magZ))
+    {
+      return false;
+    }
     return true;
   }
 
@@ -117,7 +124,7 @@ public:
     // 現在時刻を取得
     if(!getLocalTime(&_timeInfo))
     {
-      Serial.println("--- Failed to obtain time ---");
+      // Serial.println("--- Failed to obtain time ---");
     }
   }
 
