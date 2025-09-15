@@ -105,7 +105,7 @@ public:
         // ----- バイブレーション
         makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
       }
-      else if ((posX > 280)&&(posY < 200))
+      else if ((posX > 280)&&(posY > 220))
       {
         // 右下をタッチすることで、センサのキャリブレーションに入る
 
