@@ -53,6 +53,34 @@ private:
     stream.println("");
   }
 
+  void _sendSensorData(Stream &stream)
+  {
+    DynamicJsonDocument msgJson(65535);
+    msgJson["result"] = true;
+    msgJson["battery"] = _dataHolder->getBatteryLevel();
+    msgJson["imu_temp"] = _dataHolder->getImuTemperature();
+    msgJson["temperature"] = _dataHolder->getTemperature();
+    msgJson["pressure"] = _dataHolder->getPressure();
+    msgJson["altitude"] = _dataHolder->getAltitude();
+    msgJson["acc_x"] = _dataHolder->getAccelX();
+    msgJson["acc_y"] = _dataHolder->getAccelY();
+    msgJson["acc_z"] = _dataHolder->getAccelZ();
+    msgJson["gyro_x"] = _dataHolder->getGyroX();
+    msgJson["gyro_y"] = _dataHolder->getGyroY();
+    msgJson["gyro_z"] = _dataHolder->getGyroZ();
+    msgJson["mag_x"] = _dataHolder->getMagX();
+    msgJson["mag_y"] = _dataHolder->getMagY();
+    msgJson["mag_z"] = _dataHolder->getMagZ();
+    msgJson["is_gps"] = gps.location.isValid();
+    msgJson["lat"] = gps.location.lat();
+    msgJson["lng"] = gps.location.lng();
+    msgJson["alt"] = gps.altitude.meters();
+    String outputJson;
+    serializeJson(msgJson, outputJson);
+    stream.println(outputJson);
+    stream.println("");
+  }
+
 public:
   SendReceivedMessage(SensorDataHolder *dataHolder, UbxMessageParser *messageParser)
   {
@@ -73,6 +101,12 @@ public:
     {
       // ----- DCR/DCXメッセージを取得し送信する
       _sendReceivedDcrMessages(stream);
+      return (true);
+    }
+    else if (str.indexOf("CMD:GETSENSOR") == 0)
+    {
+      // ----- センサーデータを取得し送信する
+      _sendSensorData(stream);
       return (true);
     }
     return (false);

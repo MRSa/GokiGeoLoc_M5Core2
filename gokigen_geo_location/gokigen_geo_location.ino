@@ -14,6 +14,9 @@ void displayCurrentJstTime(char *header, struct tm *timeinfo);  // 現在時刻�
 void drawBusyMarker();  // 画面右下に動作中マーカーを表示する
 void applyDateTime();   // GPSから受信した時刻をシステムに設定する
 
+// ----- GPSのメッセージ処理用
+TinyGPSPlus gps;
+
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
 #include "CalculateMD5Hash.hpp"
@@ -29,9 +32,6 @@ void applyDateTime();   // GPSから受信した時刻をシステムに設定�
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
 #include "SendReceivedMessage.hpp"
-
-// ----- GPSのメッセージ処理用
-TinyGPSPlus gps;
 
 // ----- 圧力と温度のセンサ (BMP280 / I2C)
 MyBmp280Sensor bmp280(M5.In_I2C);
