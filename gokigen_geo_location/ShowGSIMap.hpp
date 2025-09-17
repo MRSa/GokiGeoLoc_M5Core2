@@ -41,7 +41,7 @@ public:
       M5.Display.setTextSize(1);
       M5.Display.setFont(&fonts::efontJA_16_b);
       M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-      M5.Display.printf("## 地図 ##\r\n");
+      M5.Display.printf("## 位置 ##\r\n");
 
       if ((!gps.location.isUpdated())&&(!_isMapDrawed))
       {
@@ -140,6 +140,16 @@ public:
         Serial.print(touchPos->getTouchY());
         Serial.println("]");
 
+        // ---- 左上が押されたとき（マップモードの切り替え）
+        if ((posX < 95)&&(posY < 45))
+        {
+          // ----- マップ表示モードを切り替える
+          Serial.println("Change map Mode");
+          showDisplayMode = SHOW_GSIMAP_ANY;
+          needClearScreen = true;
+          isHandled = true;
+        }
+
         // ---- コンパス表示エリア(仮)が押されたとき
         if ((posX < 95)&&(posY > 140)&&(posY < 210))
         {
@@ -150,7 +160,7 @@ public:
           touchPos->resetPosition();
         }
 
-        // ===== 左上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
+        // ===== 右上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
         if ((posX > 280)&&(posY < 60))
         {
           // ----- ズームレベルを変更する

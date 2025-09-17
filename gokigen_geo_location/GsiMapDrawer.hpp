@@ -5,7 +5,7 @@ class GsiMapDrawer
 private:
   M5Canvas _drawCanvas;
   
-  int _GsiMapSize = 256;
+  int _GsiMapSize = GSI_MAP_PIXEL;
   int _displaySizeX = 0;
   int _displaySizeY = 0;
 

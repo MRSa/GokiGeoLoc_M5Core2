@@ -10,6 +10,8 @@ int getDisplayBrightness();      // 現在の画面の輝度を知る
 int getNextZoomLevel(int zoomLevel);   // 地図のズームレベルを変更する
 void makeVibration(int strength, int delayTime);   // バイブレーションを実行
 void displayCurrentJstTime(char *header, struct tm *timeinfo);  // 現在時刻を画面表示
+void displayCurrentJstDateOnly(char *header, struct tm *gmt_timeinfo);
+void displayCurrentJstTimeOnly(char *header, struct tm *gmt_timeinfo);
 
 void drawBusyMarker();  // 画面右下に動作中マーカーを表示する
 void applyDateTime();   // GPSから受信した時刻をシステムに設定する
@@ -29,6 +31,7 @@ TinyGPSPlus gps;
 #include "SensorDataHolder.hpp"
 #include "TouchPositionHandler.hpp"
 #include "ShowGSIMap.hpp"
+#include "ShowAnyGSIMap.hpp"
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
 #include "SendReceivedMessage.hpp"
@@ -42,6 +45,7 @@ UbxMessageParser *ubxMessageParser = NULL;
 SendReceivedMessage *sendReceivedMessage = NULL;
 
 ShowGSIMap *gsiMapDrawer = NULL;
+ShowAnyGSIMap *anyGsiMapDrawer = NULL;
 ShowDCIS *dicsDrawer = NULL;
 ShowDetailInfo *detailDrawer = NULL;
 SensorDataHolder *sensorDataHolder = NULL;
@@ -171,6 +175,7 @@ void setup()
   gsiMapDrawer = new ShowGSIMap();
   dicsDrawer = new ShowDCIS();
   detailDrawer = new ShowDetailInfo();
+  anyGsiMapDrawer = new ShowAnyGSIMap();
 
   //----- setup() が終了したことを画面とシリアルに通知する
   delay(WAIT_DUR); // 少し待つ
@@ -341,6 +346,10 @@ void loop()
       case SHOW_DETAIL:
         // 詳細(文字表示)モード
         detailDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        break;
+      case SHOW_GSIMAP_ANY:
+        // 地理院地図表示モード (移動可)
+        anyGsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
         break;
       case SHOW_GSI_MAP:
       default:
