@@ -51,7 +51,7 @@ private:
     if (!_i2c.readRegister(BMP280_SENSOR_ADDR, BMP280_PRESS_MSB_REG, buffer, 6, I2C_COMMUNICATION_SPEED))
     {
       // 読み取り失敗...エラー応答
-      Serial.print("BME280: Read Reg. Error.");
+      //Serial.print("BME280: Read Reg. Error.");
       _adc_T = 0;
       _adc_P = 0;
       return false;
@@ -74,14 +74,14 @@ public:
     // readRegister8を使用することで、レジスタの値を1バイト読み取る処理を簡潔に記述
     if (_i2c.readRegister8(BMP280_SENSOR_ADDR, BMP280_CHIP_ID_REG, I2C_COMMUNICATION_SPEED) != BMP280_CHIPID)
     {
-      Serial.println("BMP280: Wrong Chip ID...");
+      Serial.println("BMP280: Wrong Chip ID..."); // BEGIN
       return false; // チップIDが異なるので、初期化失敗
     }
     
     // 2. キャリブレーションデータの読み込み (_readCalibrationData()を呼び出す)
     if (!_readCalibrationData())
     {
-      Serial.println("BMP280: failure to read a calibration data...");
+      Serial.println("BMP280: failure to read a calibration data..."); // BEGIN
       return false;  // キャリブレーションデータの読み込みに失敗
     }
     
@@ -89,7 +89,7 @@ public:
     // writeRegister8を使用することで、レジスタに1バイト書き込む処理を簡潔に記述
     if (!_i2c.writeRegister8(BMP280_SENSOR_ADDR, BMP280_CTRL_MEAS_REG, 0b00100111, I2C_COMMUNICATION_SPEED))
     {
-      Serial.println("BMP280: failure to initialize sensor...");
+      Serial.println("BMP280: failure to initialize sensor..."); // BEGIN
       return false; // 初期設定に失敗
     }
     return true;

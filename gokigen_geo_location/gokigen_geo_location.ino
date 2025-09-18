@@ -10,9 +10,14 @@ int getDisplayBrightness();      // 現在の画面の輝度を知る
 int getNextZoomLevel(int zoomLevel);   // 地図のズームレベルを変更する
 void makeVibration(int strength, int delayTime);   // バイブレーションを実行
 void displayCurrentJstTime(char *header, struct tm *timeinfo);  // 現在時刻を画面表示
+void displayCurrentJstDateOnly(char *header, struct tm *gmt_timeinfo);
+void displayCurrentJstTimeOnly(char *header, struct tm *gmt_timeinfo);
 
 void drawBusyMarker();  // 画面右下に動作中マーカーを表示する
 void applyDateTime();   // GPSから受信した時刻をシステムに設定する
+
+// ----- GPSのメッセージ処理用
+TinyGPSPlus gps;
 
 #include "ConstantDefinitions.h"
 #include "VariableDefinitions.h"
@@ -26,11 +31,10 @@ void applyDateTime();   // GPSから受信した時刻をシステムに設定�
 #include "SensorDataHolder.hpp"
 #include "TouchPositionHandler.hpp"
 #include "ShowGSIMap.hpp"
+#include "ShowAnyGSIMap.hpp"
 #include "ShowDCIS.hpp"
 #include "ShowDetailInfo.hpp"
-
-// ----- GPSのメッセージ処理用
-TinyGPSPlus gps;
+#include "SendReceivedMessage.hpp"
 
 // ----- 圧力と温度のセンサ (BMP280 / I2C)
 MyBmp280Sensor bmp280(M5.In_I2C);
@@ -38,8 +42,10 @@ MyBmp280Sensor bmp280(M5.In_I2C);
 // ----- いろいろな内部クラス
 SDcardHandler *cardHandler = NULL;
 UbxMessageParser *ubxMessageParser = NULL;
+SendReceivedMessage *sendReceivedMessage = NULL;
 
 ShowGSIMap *gsiMapDrawer = NULL;
+ShowAnyGSIMap *anyGsiMapDrawer = NULL;
 ShowDCIS *dicsDrawer = NULL;
 ShowDetailInfo *detailDrawer = NULL;
 SensorDataHolder *sensorDataHolder = NULL;
@@ -53,8 +59,8 @@ void setup()
   // ----- M5 Unified の初期化処理
   auto cfg = M5.config();
   cfg.serial_baudrate = SERIAL_BAUDRATE_PC;
-  cfg.internal_imu = true;
-  cfg.external_imu = false;
+  cfg.internal_imu = false;  // external -> internal の順に初期化したい場合はfalseにする
+  cfg.external_imu = true;
   M5.begin(cfg);
 
   // ----- Display
@@ -73,7 +79,17 @@ void setup()
 
   // ----- IMU
   M5.Imu.loadOffsetFromNVS();
-  auto imuResult = M5.Imu.begin();
+  // M5 IMU PRO( https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit )を増設した場合
+  // 使用する場合、Unit GNSSの動作に合わせて、"M5" の刻印面を液晶の向きに合わせる
+  auto imuResult = M5.Imu.begin(&M5.Ex_I2C);
+  if (!imuResult)
+  {
+    imuResult = M5.Imu.begin(&M5.In_I2C);  // Unit GNSS のセンサを利用する場合
+  }
+  else
+  {
+    Serial.println("Use External IMU.");
+  }
   if (imuResult)
   {
     auto imuType = M5.Imu.getType(); 
@@ -152,13 +168,17 @@ void setup()
   // ----- タッチ位置を記憶するクラスの準備
   touchPositionHandler = new TouchPositionHandler();
 
+  // ----- データを送信するクラスの準備
+  sendReceivedMessage = new SendReceivedMessage(sensorDataHolder, ubxMessageParser);
+
   // ----- 画面描画クラスの準備
   gsiMapDrawer = new ShowGSIMap();
   dicsDrawer = new ShowDCIS();
   detailDrawer = new ShowDetailInfo();
+  anyGsiMapDrawer = new ShowAnyGSIMap();
 
   //----- setup() が終了したことを画面とシリアルに通知する
-  delay(300); // 少し待つ
+  delay(WAIT_DUR); // 少し待つ
 
   //  シリアルで通知
   Serial.println("\n- - - - - - ");
@@ -216,6 +236,21 @@ void loop()
       showDisplayMode = SHOW_DETAIL;
       Serial.println("BtnC: DETAIL MODE");
       makeVibration(VIBRATION_WEAK, VIBRATION_TIME_MIDDLE);
+    }
+  }
+
+  if (Serial.available() > 0)
+  {
+    // --- コード 0x0a まで読み出す
+    String readString = Serial.readStringUntil(0x0a);
+    if (sendReceivedMessage->checkReceivedString(Serial, readString))
+    {
+      // ----- PCからのコマンドを受け付けた場合
+      Serial.println("");
+      Serial.println("");
+      Serial.println("-=-=-=-=-=-");
+      // そのまま継続
+      //return;
     }
   }
 
@@ -311,6 +346,10 @@ void loop()
       case SHOW_DETAIL:
         // 詳細(文字表示)モード
         detailDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        break;
+      case SHOW_GSIMAP_ANY:
+        // 地理院地図表示モード (移動可)
+        anyGsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
         break;
       case SHOW_GSI_MAP:
       default:

@@ -36,9 +36,10 @@
 #define PARSEMODE_NMEA_WAIT_LF 4
 
 // 画面表示モード
-#define SHOW_GSI_MAP 0 // 地理院地図表示モード
-#define SHOW_DCIS    1 // 災危通報表示モード
-#define SHOW_DETAIL  2 // 詳細(文字表示)モード
+#define SHOW_GSI_MAP 0     // 地理院地図表示モード
+#define SHOW_DCIS    1    // 災危通報表示モード
+#define SHOW_DETAIL  2    // 詳細(文字表示)モード
+#define SHOW_GSIMAP_ANY 3 // 地理院地図表示モード（移動可）
 
 // バイブレーション
 #define VIBRATION_WEAK    80
@@ -53,3 +54,8 @@
 #define MAX_ZOOM_COUNT  21
 #define DIR_NAME_BUFFER_SIZE  300
 #define DIRNAME_GSI_MAP_ROOT  "/GsiMap"
+
+// 待ち時間 (ms)
+#define WAIT_DUR 300
+
+#define GSI_MAP_PIXEL 256

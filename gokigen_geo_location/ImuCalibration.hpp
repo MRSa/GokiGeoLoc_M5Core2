@@ -32,7 +32,7 @@ private:
 
         _calib_countdown = 0;
 
-        Serial.println("----- Sensor Calibration Finished.");
+        //Serial.println("----- Sensor Calibration Finished.");
       }
     }
 }
@@ -61,7 +61,7 @@ public:
   {
     _calib_countdown = count;
     _updateCalibration(true);
-    Serial.println("----- Sensor Calibration Started.");
+    //Serial.println("----- Sensor Calibration Started.");
   }
 
 };

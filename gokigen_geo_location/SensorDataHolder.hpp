@@ -13,6 +13,12 @@ private:
   uint8_t _batteryLevel = 0;   // バッテリ残量
   struct tm _timeInfo;         // 時刻情報
 
+  float _getMagneticDeclination(float latitude, float longitude)
+  {
+    // --- ざっくり偏角は 西偏 8° とする。
+    return (-8.0f);
+  }
+
 public:
   SensorDataHolder(MyBmp280Sensor &bmp280) : _bmp(bmp280)
   {
@@ -35,7 +41,65 @@ public:
   float getMagZ() { return _imuData.mag.z; }
 
   struct tm *getTimeInfo() { return &_timeInfo; }
-  
+
+  bool isEnableGeomagneticSensor()
+  {
+    if ((_imuData.mag.x == 0.0f)&&((_imuData.mag.y == 0.0f))&&(_imuData.mag.z == 0.0f))
+    {
+      return false;
+    }
+    float magX = _imuData.mag.x;
+    float magY = _imuData.mag.y;
+    float magZ = _imuData.mag.z;
+    if (!M5.Imu.getMag(&magX, &magY, &magZ))
+    {
+      return false;
+    }
+    return true;
+  }
+
+  float getCompassHeadingDegree(float latitude, float longitude)
+  {
+    if (!isEnableGeomagneticSensor())
+    {
+      // ----- コンパスが無効な場合は、-1° にする
+      return (0.0f);
+    }
+    float magX = _imuData.mag.x;
+    float magY = _imuData.mag.y;
+    float magZ = _imuData.mag.z;
+
+    // 方位（Heading）を計算
+    float heading = atan2(magY, magX) * 180.0 / PI;
+
+    // 負の値になった場合は360を加算して正規化
+    if (heading < 0.0f)
+    {
+      heading += 360.0f;
+    }
+    // 360度を超えた場合は調整
+    if (heading > 360.0f)
+    {
+      heading -= 360.0f;
+    } 
+    
+    // 磁気偏角を適用して真北に補正
+    heading += _getMagneticDeclination(latitude, longitude);
+
+    // 負の値になった場合は360を加算して正規化
+    if (heading < 0.0f)
+    {
+      heading += 360.0f;
+    }
+
+    // 360度を超えた場合は調整
+    if (heading > 360.0f)
+    {
+      heading -= 360.0f;
+    } 
+    return (heading);   
+  }
+
   void updateSensorData()
   {
     // バッテリ残量を取得
@@ -60,7 +124,7 @@ public:
     // 現在時刻を取得
     if(!getLocalTime(&_timeInfo))
     {
-      Serial.println("--- Failed to obtain time ---");
+      // Serial.println("--- Failed to obtain time ---");
     }
   }
 

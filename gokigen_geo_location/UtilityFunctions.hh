@@ -79,6 +79,44 @@ void displayCurrentJstTime(char *header, struct tm *gmt_timeinfo)
   );
 }
 
+void displayCurrentJstDateOnly(char *header, struct tm *gmt_timeinfo)
+{
+  struct tm jsttime;  // JSTの保管場所
+   
+  // GMTからJSTに変換するため、9時間（32400秒）を加算
+  time_t rawtime = mktime(gmt_timeinfo);
+  rawtime += 9 * 60 * 60; // 9時間 * 60分 * 60秒 = 32400秒
+  struct tm *timeinfo = gmtime(&rawtime);
+  memcpy(&jsttime, timeinfo, sizeof(struct tm));
+
+  // ----- 現在時刻だけを応答する
+  M5.Display.printf("%s%04d-%02d-%02d\r\n"
+    ,header
+    ,jsttime.tm_year + 1900
+    ,jsttime.tm_mon + 1
+    ,jsttime.tm_mday
+  );
+}
+
+void displayCurrentJstTimeOnly(char *header, struct tm *gmt_timeinfo)
+{
+  struct tm jsttime;  // JSTの保管場所
+   
+  // GMTからJSTに変換するため、9時間（32400秒）を加算
+  time_t rawtime = mktime(gmt_timeinfo);
+  rawtime += 9 * 60 * 60; // 9時間 * 60分 * 60秒 = 32400秒
+  struct tm *timeinfo = gmtime(&rawtime);
+  memcpy(&jsttime, timeinfo, sizeof(struct tm));
+
+  // ----- 現在時刻だけを応答する
+  M5.Display.printf("%s%02d:%02d:%02d\r\n"
+    ,header
+    ,jsttime.tm_hour
+    ,jsttime.tm_min
+    ,jsttime.tm_sec
+  );
+}
+
 void applyDateTime()
 {
     // ----- GPSから受信した時刻をシステムに設定する処理

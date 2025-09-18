@@ -58,20 +58,20 @@ public:
     displayCurrentJstTime("時刻: ", dataHolder->getTimeInfo());
     if (!gps.location.isValid())
     {
-      if ((!gps.date.isValid())&&(!gps.time.isValid())&&(!gps.hdop.isValid()))
+      if (!gps.hdop.isValid())
       {
         // ----- 衛星からの電波を受信できていない場合
-        M5.Display.printf("衛星: 無効(%2d)  \r\n", gps.satellites.value());
+        M5.Display.printf("衛星: 無効(%2d)      \r\n", gps.satellites.value());
       }
       else
       {
         // ----- 衛星からの電波を受信できているが、十分でない場合
-        M5.Display.printf("衛星: 受信(%2d)  \r\n", gps.satellites.value());        
+        M5.Display.printf("衛星: 受信(%2d)      \r\n", gps.satellites.value());
       }
     }
     else
     {
-      M5.Display.printf("衛星: 有効(%2d)  \r\n", gps.satellites.value());      
+      M5.Display.printf("衛星: 有効(%2d)    \r\n", gps.satellites.value());      
     }
     M5.Display.printf("緯度: %3.6f  経度: %3.6f      \r\n高度: %.2f m (BMP280: %.2f m)       \r\n", gps.location.lat(), gps.location.lng(), gps.altitude.meters(), dataHolder->getAltitude());
     M5.Display.printf("気温: %.1f ℃ (BMI270: %.1f ℃)      \r\n", dataHolder->getTemperature(), dataHolder->getImuTemperature());
@@ -79,8 +79,15 @@ public:
     // M5.Display.printf("沸点: %.1f ℃\r\n", dataHolder->getWaterBoilingPoint());   // 取得してみたが、、、あきらかに値がおかしいので取得をやめる
     M5.Display.printf("重力: X:%-2.1f y:%-2.1f z:%-2.1f       \r\n", dataHolder->getAccelX(), dataHolder->getAccelY(), dataHolder->getAccelZ());
     M5.Display.printf("傾き: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getGyroX(), dataHolder->getGyroY(), dataHolder->getGyroZ());
-    M5.Display.printf("磁力: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
-    //M5.Display.printf("磁力: X:%f y:%f z:%f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ()); // 磁力は取得できないようだ
+    M5.Display.printf("磁力: X:%-3.1f y:%-3.1f z:%-3.1f       \r\n", dataHolder->getMagX(), dataHolder->getMagY(), dataHolder->getMagZ());
+    if (dataHolder->isEnableGeomagneticSensor())
+    {
+      M5.Display.printf("方位: %.1f °     \r\n", dataHolder->getCompassHeadingDegree(gps.location.lat(), gps.location.lng()));      
+    }
+    else
+    {
+      M5.Display.printf("方位: 無効       \r\n");         
+    }
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
     M5.Display.printf("輝度: %02x\r\n", getDisplayBrightness());
 
@@ -98,7 +105,7 @@ public:
         // ----- バイブレーション
         makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
       }
-      else if ((posX > 280)&&(posY < 210))
+      else if ((posX > 280)&&(posY > 220))
       {
         // 右下をタッチすることで、センサのキャリブレーションに入る
 

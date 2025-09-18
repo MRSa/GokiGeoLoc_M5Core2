@@ -3,7 +3,7 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 280
-#define MAX_STORE_MESSAGE_SIZE 800  // 過去のメッセージ保持数
+#define MAX_STORE_MESSAGE_SIZE 999  // 過去のメッセージ保持数  (800)
 class UbxMessageParser
 {
 private:
@@ -17,7 +17,9 @@ private:
   uint16_t _nofDcrMessageIndex = 0;
   uint8_t _QZSSdcrMessage[MAX_STORE_MESSAGE_SIZE][UBX_BUFFER_SIZE + 1];
   struct tm _QZSSdcrReceiveDateTime[MAX_STORE_MESSAGE_SIZE];
+  uint16_t _QZSSdcrMessageSize[MAX_STORE_MESSAGE_SIZE];
 
+/*
   void _dumpReceivedMessage()
   {
     // ペイロード長とメッセージ長を計算する
@@ -38,7 +40,8 @@ private:
     }
     Serial.println();
   }
-
+*/
+/*
   bool _checkCheckSum(uint16_t totalMessageLength)
   {
     // チェックサムの検証（推奨）
@@ -57,7 +60,8 @@ private:
       return false;
     }
   }
-
+*/
+/*  
   void _dumpQZSSSubFrameMessage()
   {
     // QZSSメッセージをサブフレームごと格納し、ダンプする
@@ -75,6 +79,7 @@ private:
     }
     Serial.println();
   }
+*/
 
   bool _isStoreQZSSMessage()
   {
@@ -99,7 +104,7 @@ private:
       if (mt == 43)
       {
         // DCRメッセージ(気象情報等)を受信した
-        Serial.println(" --- Received DCR Message! ---");
+        //Serial.println(" --- Received DCR Message! ---");
         return (true);
       }
       if (mt == 44)
@@ -114,10 +119,10 @@ private:
         if ((_dcx_decoder.r.dcx_msg_type == DCX_MSG_NULL)||(_dcx_decoder.r.dcx_msg_type == DCX_MSG_UNKOWN))
         {
           // ----- DCX NULLメッセージを受信（この場合は保管しない）
-          Serial.println(" --- NULL DCX Message(ignore) ---");
+          //Serial.println(" --- NULL DCX Message(ignore) ---");
           return (false);
         }
-        Serial.println(" --- Received DCX Message! ---");
+        //Serial.println(" --- Received DCX Message! ---");
         return (true);
       }
     }
@@ -205,14 +210,17 @@ public:
       memset(_QZSSdcrMessage[_nofDcrMessageIndex], 0x00, (UBX_BUFFER_SIZE + 1));
       memcpy(_QZSSdcrMessage[_nofDcrMessageIndex], _ubxMessageBuffer, totalMessageLength);
 
+      // ----- 保管したメッセージサイズを保管する
+      _QZSSdcrMessageSize[_nofDcrMessageIndex] = totalMessageLength;
+
       // ----- 受信日時を保管する
       struct tm currentTime;
       getLocalTime(&currentTime);
       memcpy(&_QZSSdcrReceiveDateTime[_nofDcrMessageIndex], &currentTime, sizeof(struct tm));
       _nofDcrMessageIndex++;
 
-      Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.print(" bytes.  ");
-      Serial.print(_nofDcrMessageIndex); Serial.print("/"); Serial.println(_nofDcrMessage);
+      //Serial.print("  STORE : "); Serial.print(totalMessageLength); Serial.print(" bytes.  ");
+      //Serial.print(_nofDcrMessageIndex); Serial.print("/"); Serial.println(_nofDcrMessage);
       if (_nofDcrMessage < MAX_STORE_MESSAGE_SIZE)
       {
         // 保管メッセージ数をインクリメント（最大数までたまっていたら更新しない）
@@ -260,5 +268,10 @@ public:
   uint8_t *getQZSSdcrMessage(int index)
   {
     return (_QZSSdcrMessage[index]);
+  }
+
+  uint16_t getQZSSdcrMessageSize(int index)
+  {
+    return (_QZSSdcrMessageSize[index]);
   }
 };

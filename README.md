@@ -69,6 +69,13 @@ SDカードは、FAT32形式でフォーマットしてください。FAT32形�
 - [GPSシールドを使ってみちびき（QZSS）の災害・危機管理通報サービス（DC Report・DCX）を受信してみた。](https://www.switch-science.com/blogs/magazine/gps-qzss-dc-report-dcx-receiving)
   - QZSSDCX: [https://github.com/SWITCHSCIENCE/QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
 
+### 地磁気関連
+
+- [地図と位置情報](https://internet.watch.impress.co.jp/docs/column/chizu3/1431412.html)
+- [国土地理院 磁気図](https://www.gsi.go.jp/buturisokuchi/menu03_magnetic_chart.html)
+- [国土地理院 地磁気測量](https://vldb.gsi.go.jp/sokuchi/geomag/menu_04/index.html)
+- [国土地理院 地磁気を知る](https://www.gsi.go.jp/buturisokuchi/menu01_index.html)
+
 ### プログラミング関連
 
 - [M5Unifiedライブラリの始め方](https://docs.m5stack.com/ja/arduino/m5unified/helloworld)
