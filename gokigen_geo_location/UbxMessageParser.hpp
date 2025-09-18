@@ -3,7 +3,7 @@
 // UBXメッセージの最大長を定義
 // (QZSSメッセージは長くなる可能性があるらしい)
 #define UBX_BUFFER_SIZE 280
-#define MAX_STORE_MESSAGE_SIZE 800  // 過去のメッセージ保持数
+#define MAX_STORE_MESSAGE_SIZE 999  // 過去のメッセージ保持数  (800)
 class UbxMessageParser
 {
 private:
