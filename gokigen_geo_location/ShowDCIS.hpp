@@ -13,7 +13,6 @@ class ShowDCIS
 private:
   int _fontSize = 3;
   bool _isDumped = false;
-  bool _makeVibration = false;
   int _messageIndex = 0;
   int _isClear = false;
   DCXDecoder _dcx_decoder;
@@ -130,7 +129,7 @@ public:
 
   }
 
-  void drawScreen(SensorDataHolder *dataHolder, TouchPositionHandler *touchPos, UbxMessageParser *messageParser)
+  void drawScreen(UbxMessageParser *messageParser)
   {
     if (_isClear)
     {
@@ -173,7 +172,7 @@ public:
 
     // ----- メッセージの移動タッチ位置のマーク
     M5.Display.fillTriangle(257, 35, 272, 28, 272, 43, TFT_WHITE);
-   M5.Display.drawLine(257, 27, 257, 43);
+    M5.Display.drawLine(257, 27, 257, 43);
     //M5.Display.drawRect(224,28, 15,15, TFT_WHITE);
 
     M5.Display.setFont(&fonts::efontJA_14);
@@ -184,8 +183,6 @@ public:
     M5.Display.drawLine(319, 27, 319, 43);
     M5.Display.fillTriangle(319, 35, 304, 28, 304, 43);
     //M5.Display.drawRect(304,28, 15,15, TFT_WHITE);
-
-    // ----- メッセージのフォントサイズを決定する
 
     // -----------------------------------------------
     //   ここで災危通報メッセージの表示を（１件づつ）行う
@@ -200,88 +197,84 @@ public:
       _isDumped = true;
     }
 
+  }
+
+  void touchedPosition(int posX, int posY, UbxMessageParser *messageParser)
+  {
     // ----- 表示メッセージの変更確認 -----
-    if (touchPos->isPressed())
+    int messageCount = messageParser->getMessageCount();
+    bool vibration = false;
+    if ((posX > 300)&&(posY < 25))
     {
-      //----- タッチパネルが押されたことを検出
-      int posX = touchPos->getTouchX();
-      int posY = touchPos->getTouchY();
-      _makeVibration = false;
-      if ((posX > 300)&&(posY < 25))
+      // --- 右上タッチで、フォントサイズを変更
+      _fontSize--;
+      if (_fontSize < 0)
       {
-        // --- 右上タッチで、フォントサイズを変更
-        _fontSize--;
-        if (_fontSize < 0)
-        {
-          // ---- 最小サイズよりも小さい場合は、最大サイズにする
-          _fontSize = 4;
-        }
-        _makeVibration = true;
+        // ---- 最小サイズよりも小さい場合は、最大サイズにする
+        _fontSize = 4;
       }
-      else if ((posX > 304)&&(posY > 27)&&(posY < 60))
-      {
-        // ----- 受信メッセージ数の横あたりの右 : 末尾の場所に
-        _messageIndex = messageCount - 1;
-        _makeVibration = true;
-      }
-      else if ((posX > 275)&&(posX < 300)&&(posY > 27)&&(posY < 60))
-      {
-        // ----- 受信メッセージ数の横あたりの中 : 最新の場所に
-        _messageIndex = messageParser->getLastMessageIndex() - 1;
-        _makeVibration = true;
-      }
-      else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
-      {
-        // ----- 受信メッセージ数の横あたりの左 : 先頭に
+      vibration = true;
+    }
+    else if ((posX > 304)&&(posY > 27)&&(posY < 60))
+    {
+      // ----- 受信メッセージ数の横あたりの右 : 末尾の場所に
+      _messageIndex = messageCount - 1;
+      vibration = true;
+    }
+    else if ((posX > 275)&&(posX < 300)&&(posY > 27)&&(posY < 60))
+    {
+      // ----- 受信メッセージ数の横あたりの中 : 最新の場所に
+      _messageIndex = messageParser->getLastMessageIndex() - 1;
+      vibration = true;
+    }
+    else if ((posX > 250)&&(posX < 275)&&(posY > 27)&&(posY < 60))
+    {
+      // ----- 受信メッセージ数の横あたりの左 : 先頭に
+      _messageIndex = 0;
+      vibration = true;
+    }
+    else if (posY < 70)
+    {
+      // タイトル周辺をタッチした場合には、反応しないようにする
+      vibration = false;
+    }
+    else if (posX < 160)
+    {
+      // 左半分をタッチ、表示メッセージをひとつ減らす
+      _messageIndex--;
+      vibration = true;
+    }
+    else
+    {
+      // 右半分をタッチ、表示メッセージをひとつふやす
+      _messageIndex++;
+      vibration = true;
+    }
 
-        _messageIndex = 0;
-        _makeVibration = true;
-      }
-      else if (posY < 70)
-      {
-        // タイトル周辺をタッチした場合には、反応しないようにする
-        _makeVibration = false;
-      }
-      else if (posX < 160)
-      {
-        // 左半分をタッチ、表示メッセージをひとつ減らす
-        _messageIndex--;
-        _makeVibration = true;
-      }
-      else
-      {
-        // 右半分をタッチ、表示メッセージをひとつふやす
-        _messageIndex++;
-        _makeVibration = true;
-      }
-      if (_messageIndex < 0)
-      {
-        // メッセージ最大数を設定する
-        _messageIndex = messageCount - 1;
-        Serial.print("Count LAST [");
-        Serial.print(_messageIndex);
-        Serial.println("]");
-        _isDumped = false;
-      }
-      if (_messageIndex > (messageCount - 1))
-      {
-        // 先頭バッファを設定する
-        _messageIndex = 0;
-        Serial.print("Count FIRST [");
-        Serial.print(messageCount);
-        Serial.println("]");
-        _isDumped = false;
-      }
-      // ----- バイブレーション
-      if (_makeVibration)
-      {
-        _isClear = true; // 次回表示でメッセージを消去する
-        makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
-      }
-
-      // ---- 開放する
-      touchPos->resetPosition();
-      _makeVibration = false;
+    if (_messageIndex < 0)
+    {
+      // メッセージ最大数を設定する
+      _messageIndex = messageCount - 1;
+      Serial.print("Count LAST [");
+      Serial.print(_messageIndex);
+      Serial.println("]");
+      _isDumped = false;
+    }
+    if (_messageIndex > (messageCount - 1))
+    {
+      // 先頭バッファを設定する
+      _messageIndex = 0;
+      Serial.print("Count FIRST [");
+      Serial.print(messageCount);
+      Serial.println("]");
+      _isDumped = false;
+    }
+    // ----- バイブレーション 実行
+    if (vibration)
+    {
+      _isClear = true; // 次回表示でメッセージを消去する
+      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+      isHandledMessage = true;
     }
   }
 };

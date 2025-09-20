@@ -33,7 +33,7 @@ public:
       _myCanvas = new GsiMapDrawer(DISPLAY_MAPSIZE, DISPLAY_MAPSIZE);
   }
 
-  void drawScreen(TinyGPSPlus &gps, SensorDataHolder *dataHolder, TouchPositionHandler *touchPos)
+  void drawScreen(TinyGPSPlus &gps, SensorDataHolder *dataHolder)
   {
     try
     {
@@ -117,6 +117,7 @@ public:
         M5.Display.fillRect(15, 142, 60, 60, TFT_BLACK);  // X: 0-95(最大) Y:60(最大)
       }
 
+      // ----- 画面左下の情報表示
       M5.Display.setCursor(0,205);
       M5.Display.setFont(&fonts::efontJA_14);
       M5.Display.printf("Zoom: %2d\r\n", _zoomLevel);
@@ -125,66 +126,51 @@ public:
       M5.Display.setFont(&fonts::efontJA_14);
       M5.Display.printf("電池: %02d%%\r\n", dataHolder->getBatteryLevel());
 
-      if (touchPos->isPressed())
-      {
-        bool isHandled = false;
-
-        //----- タッチパネルが押された位置を検出
-        int posX = touchPos->getTouchX();
-        int posY = touchPos->getTouchY();
-
-        // ---- 押された場所をSerial出力
-        Serial.print("Touch Position:[");
-        Serial.print(touchPos->getTouchX());
-        Serial.print(",");
-        Serial.print(touchPos->getTouchY());
-        Serial.println("]");
-
-        // ---- 左上が押されたとき（マップモードの切り替え）
-        if ((posX < 95)&&(posY < 45))
-        {
-          // ----- マップ表示モードを切り替える
-          Serial.println("Change map Mode");
-          showDisplayMode = SHOW_GSIMAP_ANY;
-          needClearScreen = true;
-          isHandled = true;
-        }
-
-        // ---- コンパス表示エリア(仮)が押されたとき
-        if ((posX < 95)&&(posY > 140)&&(posY < 210))
-        {
-          // ----- そのうち処理を入れたい
-          Serial.println("Pushed the area.");
-
-          // ---- 開放する
-          touchPos->resetPosition();
-        }
-
-        // ===== 右上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
-        if ((posX > 280)&&(posY < 60))
-        {
-          // ----- ズームレベルを変更する
-          _zoomLevel = getNextZoomLevel(_zoomLevel);
-          Serial.print("next zoom level ");
-          Serial.println(_zoomLevel);
-
-          isHandled = true;
-        }
-        if (isHandled)
-        {
-          // ----- バイブレーション
-          makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
-          
-          // ---- 開放する
-          touchPos->resetPosition();
-        }
-      }
       _isMapDrawed = true;
     }
     catch (...)
     {
       Serial.println("Picture Load Exception...");
       _isMapDrawed = false;
+    }
+  }
+  
+  void touchedPosition(int posX, int posY)
+  {
+    bool vibration = false;
+
+    // ---- 左上が押されたとき（マップモードの切り替え）
+    if ((posX < 95)&&(posY < 45))
+    {
+      // ----- マップ表示モードを切り替える
+      Serial.println("Change map Mode");
+      showDisplayMode = SHOW_GSIMAP_ANY;
+      needClearScreen = true;
+      vibration = true;
+    }
+    // ---- コンパス表示エリア(仮)が押されたとき
+    if ((posX < 95)&&(posY > 140)&&(posY < 210))
+    {
+      // ----- そのうち何か処理を入れたい
+      Serial.println("Pushed the area.");
+    }
+    
+    // ===== 右上の場所を押したときの処理 (ちょっと反応が悪いので考える...)
+    if ((posX > 280)&&(posY < 60))
+    {
+      // ----- ズームレベルを変更する
+      _zoomLevel = getNextZoomLevel(_zoomLevel);
+      Serial.print("next zoom level ");
+      Serial.println(_zoomLevel);
+      
+      vibration = true;
+    }
+
+    // ----- バイブレーション 実行
+    if (vibration)
+    {
+      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+      isHandledMessage = true;
     }
   }
 };

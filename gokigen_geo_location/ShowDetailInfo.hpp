@@ -12,7 +12,7 @@ public:
 
   }
 
-  void drawScreen(TinyGPSPlus &gps, SensorDataHolder *dataHolder, TouchPositionHandler *touchPos)
+  void drawScreen(TinyGPSPlus &gps, SensorDataHolder *dataHolder)
   {
     uint8_t batteryLevel = dataHolder->getBatteryLevel(); // 電池残量
 
@@ -91,35 +91,33 @@ public:
     M5.Display.printf("電池: %02d %%\r\n", batteryLevel);
     M5.Display.printf("輝度: %02x\r\n", getDisplayBrightness());
 
-    // ----- 画面タッチ時の操作 -----
-    if (touchPos->isPressed())
-    {
-      //----- タッチパネルが押されたことを検出
-      int posX = touchPos->getTouchX();
-      int posY = touchPos->getTouchY();
-      if ((posX > 280)&&(posY < 60))
-      {
-        // 右上をタッチすることで、ディスプレイの明るさを変更する
-        changeDisplayBrightness();
-
-        // ----- バイブレーション
-        makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
-      }
-      else if ((posX > 280)&&(posY > 220))
-      {
-        // 右下をタッチすることで、センサのキャリブレーションに入る
-
-        // ----- バイブレーション
-        makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
-
-        // ----- センサのキャリブレーションを実行
-        calibrator.executeCalibration(101);
-      }
-
-      // ---- 開放する
-      touchPos->resetPosition();
-    }
     // ----- キャリブレーション中 or 実行のためのトリガをクラスに入力
     calibrator.continueCalibration();
   }
+
+  void touchedPosition(int posX, int posY)
+  {
+    // ----- 表示メッセージの変更確認 -----
+    bool vibration = false;
+    if ((posX > 280)&&(posY < 60))
+    {
+        // 右上をタッチすることで、ディスプレイの明るさを変更する
+        changeDisplayBrightness();
+        vibration = true;
+    }
+    else if ((posX > 280)&&(posY > 220))
+    {
+      // ----- センサのキャリブレーションを実行
+      calibrator.executeCalibration(101);
+      vibration = true;
+    }
+
+    // ----- バイブレーション 実行
+    if (vibration)
+    {
+      makeVibration(VIBRATION_MIDDLE, VIBRATION_TIME_SHORT);
+      isHandledMessage = true;
+    }
+  }
+
 };
