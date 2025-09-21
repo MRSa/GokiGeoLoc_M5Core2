@@ -1,6 +1,7 @@
 
 // GNSSモジュール(シリアルポート)からデータを受信した時のステータス管理用
 int parseMode = PARSEMODE_WAIT_START;
+bool isHandledMessage = false;
 
 // ----- 初回の時刻反映を実行したかどうか
 bool isDateTimeApplied = false;

@@ -241,22 +241,20 @@ void loop()
 
   if (Serial.available() > 0)
   {
-    // --- コード 0x0a まで読み出す
+    // --- PCサイドからのコマンド受付コード 0x0a まで読み出す
     String readString = Serial.readStringUntil(0x0a);
     if (sendReceivedMessage->checkReceivedString(Serial, readString))
     {
       // ----- PCからのコマンドを受け付けた場合
       Serial.println("");
       Serial.println("");
-      Serial.println("-=-=-=-=-=-");
-      // そのまま継続
+      // ----- そのまま継続
       //return;
     }
   }
 
   // ----- シリアルバッファにデータがある限り、全てのバイトを処理する
   //  (メッセージが受信できた時は抜けて画面更新処理などを実行する)
-  bool isHandledMessage = false;
   if (UBLOX_SERIAL.available() > 0)
   {
     uint8_t incomingByte = UBLOX_SERIAL.read();
@@ -318,7 +316,38 @@ void loop()
     }
   }
 
-  // ----- メッセージがそろったときのみ画面を更新する
+  // ----- タッチパネルの操作
+  if (touchPositionHandler->isPressed())
+  {
+    //----- タッチパネルが押されたことを検出
+    int touchPosX = touchPositionHandler->getTouchX();
+    int touchPosY = touchPositionHandler->getTouchY();
+
+    switch (showDisplayMode)
+    {
+      case SHOW_DCIS:
+        // 災危通報表示モード
+        dicsDrawer->touchedPosition(touchPosX, touchPosY, ubxMessageParser);
+        break;
+      case SHOW_DETAIL:
+        // 詳細(文字表示)モード
+        detailDrawer->touchedPosition(touchPosX, touchPosY);
+        break;
+      case SHOW_GSIMAP_ANY:
+        // 地理院地図表示モード (移動可)
+        anyGsiMapDrawer->touchedPosition(touchPosX, touchPosY);
+        break;
+      case SHOW_GSI_MAP:
+      default:
+        // 地理院地図表示モード
+        gsiMapDrawer->touchedPosition(touchPosX, touchPosY);
+        break;
+    }
+    // ---- 開放する
+    touchPositionHandler->resetPosition();
+  }
+
+  // ----- 画面更新が必要なときのみ画面を更新する
   if (isHandledMessage)
   {
     if (gps.location.isUpdated())
@@ -341,23 +370,26 @@ void loop()
     {
       case SHOW_DCIS:
         // 災危通報表示モード
-        dicsDrawer->drawScreen(sensorDataHolder, touchPositionHandler, ubxMessageParser);
+        dicsDrawer->drawScreen(ubxMessageParser);
         break;
       case SHOW_DETAIL:
         // 詳細(文字表示)モード
-        detailDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        detailDrawer->drawScreen(gps, sensorDataHolder);
         break;
       case SHOW_GSIMAP_ANY:
         // 地理院地図表示モード (移動可)
-        anyGsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        anyGsiMapDrawer->drawScreen(gps, sensorDataHolder);
         break;
       case SHOW_GSI_MAP:
       default:
         // 地理院地図表示モード
-        gsiMapDrawer->drawScreen(gps, sensorDataHolder, touchPositionHandler);
+        gsiMapDrawer->drawScreen(gps, sensorDataHolder);
         break;
     }
+
+    // ----- 画面更新用のフラグを落とす
     isScreenModeChanging = false;
+    isHandledMessage = false;
 
     // ----- メッセージを受信していることを示すマークを表示する
     drawBusyMarker();
