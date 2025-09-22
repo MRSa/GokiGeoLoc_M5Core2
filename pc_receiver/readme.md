@@ -5,12 +5,30 @@
 PCからシリアル経由で [CMD:GETDCRMSG\r\n]を送信すると、M5Stack Core2 から送り返してくれる災危通報のデータが入った JSONデータを解析するpythonスクリプトです。
 起動時に ファイル名が指定されていればファイルから、なければ標準入力から読み込むようになっています。
 
-DCR/DCXメッセージの解析に [QZSS DCR Decoder Azarashi](https://github.com/nbtk/azarashi) を使用していますが、ubloxメッセージで送信しているので、[NEO-M9NのUBX-RXM-SFRBXメッセージが正常にデコードされるよう修正 #18](https://github.com/nbtk/azarashi/pull/18) の pull request が取り込まれている必要があるようです。ご注意ください。
+DCR/DCXメッセージの解析に [QZSS DCR Decoder Azarashi](https://github.com/nbtk/azarashi) を使用していますが、ubloxメッセージで送信しているので、[NEO-M9NのUBX-RXM-SFRBXメッセージが正常にデコードされるよう修正 #18](https://github.com/nbtk/azarashi/pull/18) の pull request が取り込まれている必要があります。ご注意ください。
+
+## 使用方法
+
+dcr_analysis.py (JSONファイル名) : 指定したJSONファイルを解析し、標準出力に解析結果を出力します。
 
 ## サンプルデータ
 
-実際に受信したデータファイルは [getdcrmsg.json](getdcrmsg.json) です。
+実際に受信したデータファイルは [getdcrmsg.json](getdcrmsg.json) です。本スクリプトは、この形式でのデータを期待しています。count は、配列 messages の個数です。（ messagesが 0 個の場合は、result は false となります。）
 
-## 注意
-
-未使用です。(まだCopilotさんに生成してもらっただけです。。。これから確認...)
+    {
+       "result": true,
+       "count": 11,
+       "messages": [
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01200203f3114dc381356",
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01200203f3114dc381356",
+          "b5620213280005020100083d0200c1f4ad530c058011d401a230f9a13a5e88ca3f5480065121130000002693074ab657",
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01000203fb1642f716d15",
+          "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c111003061d4b7e926ba7c",
+          "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c11100306154cacfe5f240",
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01200203fb169fafbc954",
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01000203ff1279ad33d96",
+          "b5620213280005020100083d0200c1f4ad9ac30280118b7f58f20d6219108865452c961ab1c01200203ff12a4f597d9f",
+          "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c110003061147236c19cda",
+          "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c1130030611484afcd3626"
+       ]
+    }
