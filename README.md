@@ -68,6 +68,9 @@ SDカードは、FAT32形式でフォーマットしてください。FAT32形�
   - QZQSM: [https://github.com/baggio63446333/QZQSM](https://github.com/baggio63446333/QZQSM)
 - [GPSシールドを使ってみちびき（QZSS）の災害・危機管理通報サービス（DC Report・DCX）を受信してみた。](https://www.switch-science.com/blogs/magazine/gps-qzss-dc-report-dcx-receiving)
   - QZSSDCX: [https://github.com/SWITCHSCIENCE/QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
+- [QZSS DCR Decoder Azarashi](https://github.com/nbtk/azarashi)
+  - [azarashi(PyPI)](https://pypi.org/project/azarashi/)
+  - シリアル経由でPCに送り付けるJSONデータフォーマットの解釈に使用します。ただし、[NEO-M9NのUBX-RXM-SFRBXメッセージが正常にデコードされるよう修正 #18](https://github.com/nbtk/azarashi/pull/18) が取り込まれている必要があるようです。
 
 ### 地磁気関連
 
