@@ -1,23 +1,67 @@
 # GokiGeoLoc_M5Core2
 
-[M5Stack Core2](https://docs.m5stack.com/en/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図と災危情報を見えるようにしてみた件
-
-- [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)
-- [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module)
+[M5Stack Core2](https://docs.m5stack.com/en/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) をつなげて、地図や災危情報、センサデータを見えるようにしてみた件
 
 ## 機能
 
-以下に画面イメージを示します。初期表示は、「地図表示」モードです。
+本リポジトリでは、[M5Stack Core2](https://docs.m5stack.com/en/core/core2) に [Module GNSS(M135)](https://docs.m5stack.com/en/module/GNSS%20Module) を使用して、次の機能を実現します。
 
-![画面イメージ](https://github.com/MRSa/GokiGeoLoc_M5Core2/blob/main/images/gok_geo_loc.png?raw=true)
+- **現在位置の表示**
+  - [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module) で受信した緯度経度の情報から、M5Stack Core2のmicroSDカードに入れた[地理院地図](https://maps.gsi.go.jp/help/howtouse.html)を使って現在位置を表示する
+- **現在方位の表示**
+  - [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module)、もしくは [Unit Mini IMU-Pro](https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit) に搭載された地磁気センサで北の方角を示す
+- **オフライン地図の表示**
+  - あらかじめmicroSDカードにダウンロードした[地理院地図](https://maps.gsi.go.jp/help/howtouse.html)を画面に地図を表示する
+- **災危通報の表示**
+  - [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module) で受信した[災危通報](https://qzss.go.jp/technical/system/dcr.html)を最大999件蓄積し、表示する
+- **搭載センサ情報の表示**
+  - [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module) に搭載されたセンサ([BMI270](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmi270-ds000.pdf), [BMM150](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmm150-ds001.pdf), [BMP280](https://www.bosch-sensortec.com/media/boschsensortec/downloads/product_flyer/bst-bmp280-fl000.pdf))のデータを表示する
+- **USBシリアルポート経由でデータ転送**
+  - USB シリアルポート経由で、センサの情報、蓄積した最大999件の[災危通報](https://qzss.go.jp/technical/system/dcr.html)を[M5Stack Core2](https://docs.m5stack.com/ja/core/core2)から転送する
 
-- **ボタンA** : 地図表示 (現在位置を地図上に表示)
+## システム構成
+
+本リポジトリで使用するシステム構成を示します。
+
+![システム構成図](https://github.com/MRSa/GokiGeoLoc_M5Core2/blob/main/images/system.png?raw=true)
+
+- [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)
+  - [地理院地図](https://maps.gsi.go.jp/help/howtouse.html)を表示するために、microSDカードの搭載が必要
+- [Module GNSS(M135)](https://docs.m5stack.com/ja/module/GNSS%20Module)
+- [Unit Mini IMU-Pro](https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit) (オプション)
+  - [Unit Mini IMU-Pro](https://docs.m5stack.com/ja/unit/IMU%20Pro%20Mini%20Unit) を [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)に接続して起動すると、このユニットのセンサを優先して利用します
+- PC等 (オプション)
+  - [M5Stack Core2](https://docs.m5stack.com/ja/core/core2)とUSBシリアル通信でつなぎ、受信した災危通報メッセージを転送する場合
+
+## ビルド環境・使用ライブラリ
+
+- [Arduino IDE](https://www.arduino.cc/en/software/)
+- [M5unified](https://github.com/m5stack/M5Unified)
+- [M5GFX](https://github.com/m5stack/M5GFX)
+- [TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus)
+- [QZQSM](https://github.com/baggio63446333/QZQSM)
+- [QZSSDCX](https://github.com/SWITCHSCIENCE/QZSSDCX)
+- [ArduinoJson](https://arduinojson.org/)
+
+## 操作説明
+
+電源を入れると、初期化処理を行った後、**現在位置表示** となります。
+以下に画面イメージと操作を示します。
+
+![画面イメージと操作](https://github.com/MRSa/GokiGeoLoc_M5Core2/blob/main/images/instruction.png?raw=true)
+
+- **左ボタン** : 現在位置表示/地図表示 (現在位置を地図中心に表示、地図を表示)
+  - 左上の題名部分をタッチすることで、**現在位置表示** と **地図表示** を切り替えることができます。
+  - 地図表示では、画面上の上下左右をタッチして表示位置を移動させることができます。
   - 複数のズームレベルの地図をSDカードに入れていた場合、右上(Zマーク)をタッチすると、ズームレベルを変更できます。
-- **ボタンB** : 受信した災危通報の表示
+- **中ボタン** : 受信した災危通報の表示
+  - 災危通報は、最大999件蓄積することができます。
   - 右上(Fマーク)をタッチすると、文字のサイズが変わります。情報が多く、画面からはみ出す場合には文字サイズの変更を試してください。
   - 画面の左半分をタッチすると、前の災危情報を表示します。
   - 画面の右半分をタッチすると、次の災危情報を表示します。
-- **ボタンC** : 詳細表示 (文字で情報を表示)
+  - 画面右上に、メッセージを先頭、末尾に移動するボタンがあります。
+- **右ボタン** : 詳細表示 (文字で情報を表示)
+  - センサの情報を一覧で表示します。
   - 右上(Bマーク)をタッチすると、画面の輝度を変えることができます。だんだん明るくなり、最大輝度になった後は、最小輝度になります。
 
 ## 地図タイルの置き方
