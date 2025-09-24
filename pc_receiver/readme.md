@@ -31,6 +31,8 @@ DCR/DCXメッセージの解析に [QZSS DCR Decoder : Azarashi](https://github.
 
 ## サンプルJSONデータ
 
+### CMD:GETDCRMSG
+
 実際に受信したデータファイルは [getdcrmsg.json](getdcrmsg.json) です。本スクリプトでは、この形式でのデータが入力されることを期待しています。count は、配列 messages の個数です。（ messagesが 0 個の場合は、result は false となります。）
 
     {
@@ -49,6 +51,32 @@ DCR/DCXメッセージの解析に [QZSS DCR Decoder : Azarashi](https://github.
           "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c110003061147236c19cda",
           "b5620213280005020100083d0200c1f4adc6cc028011cb015a2603828a40086a4550a81f41c1130030611484afcd3626"
        ]
+    }
+
+### CMD:GETSENSOR
+
+以下のデータは、**CMD:GETSENSOR** で受信したデータです。
+
+    {
+      "result": true,
+      "battery": 20,
+      "imu_temp": 30.43555,
+      "temperature": 35.69,
+      "pressure": 102254,
+      "altitude": -77.06008206,
+      "acc_x": 0.002441,
+      "acc_y": -0.543457,
+      "acc_z": 0.851807,
+      "gyro_x": 0.061035,
+      "gyro_y": 0.488281,
+      "gyro_z": -0.12207,
+      "mag_x": 163.3331,
+      "mag_y": -227.2813,
+      "mag_z": 271.4142,
+      "is_gps": true,
+      "lat": 35.6809591,
+      "lng": 139.7673068,
+      "alt": 26.8
     }
 
 ## 参考
