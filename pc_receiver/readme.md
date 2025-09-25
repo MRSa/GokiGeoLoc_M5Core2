@@ -76,7 +76,8 @@ DCR/DCXメッセージの解析に [QZSS DCR Decoder : Azarashi](https://github.
       "is_gps": true,
       "lat": 35.6809591,
       "lng": 139.7673068,
-      "alt": 26.8
+      "alt": 26.8,
+      "heap": 3881052
     }
 
 ## 参考
