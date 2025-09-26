@@ -34,7 +34,7 @@ private:
 
     // 動的 JSON ドキュメントを確保
     DynamicJsonDocument msgJson(docSize + 256); // 予備のバッファとして +256
-    if (msgJson.isNull())
+    if (msgJson.capacity() == 0)
     {
       // ----- メッセージの確保に失敗(エラー応答する)
       _sendErrorResponse(stream, -2); // -2: DynamicJsonDocument確保失敗
