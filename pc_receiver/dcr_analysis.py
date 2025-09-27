@@ -41,7 +41,7 @@ def load_json_from_file(file_path):
         log_error(f"ファイル読み込み中に予期せぬエラーが発生しました: {e}")
         raise
 
-def load_json_from_serial(port_name, baudrate=115200, timeout=15):
+def load_json_from_serial(port_name, baudrate=115200, timeout=25):
     """
     指定されたシリアルポートからJSONデータを読み込みます。
     

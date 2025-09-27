@@ -11,7 +11,7 @@ def log_info(message):
     """標準エラー出力に情報メッセージを出力します。"""
     print(f"INFO: {message}", file=sys.stderr)
 
-def load_json_from_serial(port_name, baudrate=115200, timeout=15):
+def load_json_from_serial(port_name, baudrate=115200, timeout=25):
     """
     指定されたシリアルポートからJSONデータを読み込みます。
     

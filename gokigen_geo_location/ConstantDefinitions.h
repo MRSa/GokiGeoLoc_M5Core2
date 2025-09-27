@@ -4,6 +4,7 @@
 
 // ----- USBシリアル通信
 #define SERIAL_BAUDRATE_PC 115200
+#define SERIAL_CMD_MSGLENGTH_MAX 256
 
 // ----- 画面レイアウト関連
 #define DISPLAY_MAPSIZE 200

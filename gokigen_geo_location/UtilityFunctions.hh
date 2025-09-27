@@ -168,3 +168,38 @@ void drawBusyMarker()
       break;
   }
 }
+
+// 非同期でシリアル入力の1バイトを読み取る関数
+void checkSerialInput()
+{
+  while (Serial.available())
+  {
+    // 新しいバイトを読み込む
+    char inChar = (char)Serial.read();
+
+    // 終端文字0x0a (LF)を検出した場合
+    if (inChar == 0x0a)
+    {
+      // 処理対象の文字列として確定
+      stringCompleteFromPC = true;
+    } 
+    // キャリッジリターン0x0d (CR)は無視する
+    else if (inChar == 0x0d)
+    {
+      // do nothing
+    }
+    else
+    if (incomingStringFromPC.length() >= SERIAL_CMD_MSGLENGTH_MAX)
+    {
+      // メッセージ長が長すぎるので、ここでいったん区切る
+      // (処理対象の文字列として確定させる)
+      stringCompleteFromPC = true;
+      // 注意: このinCharはincomingStringに追加されない
+    }
+    // それ以外の文字を文字列に追加
+    else
+    {
+      incomingStringFromPC += inChar;
+    }
+  }
+}
