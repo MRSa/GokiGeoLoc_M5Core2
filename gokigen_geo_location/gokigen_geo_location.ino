@@ -239,6 +239,22 @@ void loop()
     }
   }
 
+  // シリアルデータのチェックと読み取りを非同期で行う
+  checkSerialInput();
+  
+  // シリアルからのコマンド受信が完了していたら処理を行う
+  if (stringCompleteFromPC)
+  {
+    // 受信したコマンド文字列を処理する
+    sendReceivedMessage->checkReceivedString(Serial, incomingStringFromPC);
+    
+    // コマンド文字列の処理後、フラグと文字列をリセット
+    incomingStringFromPC = "";
+    stringCompleteFromPC = false;
+    Serial.println("");
+  }
+
+/*  
   if (Serial.available() > 0)
   {
     // --- PCサイドからのコマンド受付コード 0x0a まで読み出す
@@ -252,8 +268,9 @@ void loop()
       //return;
     }
   }
+*/
 
-  // ----- シリアルバッファにデータがある限り、全てのバイトを処理する
+// ----- シリアルバッファにデータがある限り、全てのバイトを処理する
   //  (メッセージが受信できた時は抜けて画面更新処理などを実行する)
   if (UBLOX_SERIAL.available() > 0)
   {

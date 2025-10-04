@@ -6,66 +6,77 @@ private:
   SensorDataHolder *_dataHolder;
   UbxMessageParser *_messageParser;
 
-void _sendReceivedDcrMessages(Stream &stream)
-{
-  int msgCount = _messageParser->getMessageCount();
-  if (msgCount <= 0)
-  {
-    DynamicJsonDocument msgJson(1024);
-    msgJson["result"] = false;
-    msgJson["count"] = msgCount;
-    String outputJson;
-    serializeJson(msgJson, outputJson);
-    stream.println(outputJson);
-    stream.println("");
-    return;
+  void _sendErrorResponse(Stream &stream, int count) {
+    StaticJsonDocument<128> errJson;
+    errJson["result"] = false;
+    errJson["count"] = count;
+    serializeJson(errJson, stream);
   }
 
-  // JSON ドキュメントの必要なメモリサイズを正確に計算
-  size_t docSize = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(msgCount);
-  for (int index = 0; index < msgCount; index++)
+  void _sendReceivedDcrMessages(Stream &stream)
   {
-    uint16_t totalMessageLength = _messageParser->getQZSSdcrMessageSize(index);
-    // 1バイトは2桁の16進数に変換されるため、サイズは totalMessageLength * 2
-    docSize += totalMessageLength * 2 + 1; // +1 はヌル終端文字
-  }
-
-  // 動的 JSON ドキュメントを確保
-  DynamicJsonDocument msgJson(docSize + 128); // 予備のバッファとして +128
-  msgJson["result"] = true;
-  msgJson["count"] = msgCount;
-
-  JsonArray messages = msgJson.createNestedArray("messages");
-  for (int index = 0; index < msgCount; index++)
-  {
-    uint8_t *msg = _messageParser->getQZSSdcrMessage(index);
-    uint16_t totalMessageLength = _messageParser->getQZSSdcrMessageSize(index);
-
-    // 16進数文字列を格納するのに必要なバッファを確保
-    // 1バイトあたり2文字 + ヌル終端文字
-    char hexBuffer[totalMessageLength * 2 + 1]; 
-    char *p = hexBuffer;
-
-    // 効率的なループで16進数文字列を生成
-    for (int pos = 0; pos < totalMessageLength; pos++)
+    int msgCount = _messageParser->getMessageCount();
+    if (msgCount <= 0)
     {
-      p += sprintf(p, "%02x", msg[pos]);
+      _sendErrorResponse(stream, msgCount);
+      return;
     }
+
+    // JSON ドキュメントの必要なメモリサイズを正確に計算
+    size_t docSize = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(msgCount);
+    for (int index = 0; index < msgCount; index++)
+    {
+      uint16_t totalMessageLength = _messageParser->getQZSSdcrMessageSize(index);
+      size_t stringLength = totalMessageLength * 2;
+      // 1バイトは2桁の16進数に変換されるため、サイズは totalMessageLength * 2
+      docSize += JSON_STRING_SIZE(stringLength) + stringLength + 1; // +1 はヌル終端文字
+    }
+
+    // 動的 JSON ドキュメントを確保
+    DynamicJsonDocument msgJson(docSize + 256); // 予備のバッファとして +256
+    if (msgJson.capacity() == 0)
+    {
+      // ----- メッセージの確保に失敗(エラー応答する)
+      _sendErrorResponse(stream, -2); // -2: DynamicJsonDocument確保失敗
+      return;
+    }
+
+    msgJson["result"] = true;
+    msgJson["count"] = msgCount;
+
+    JsonArray messages = msgJson.createNestedArray("messages");
+    for (int index = 0; index < msgCount; index++)
+    {
+      uint8_t *msg = _messageParser->getQZSSdcrMessage(index);
+      uint16_t totalMessageLength = _messageParser->getQZSSdcrMessageSize(index);
+
+      // 16進数文字列を格納するのに必要なバッファを確保 (1バイトあたり2文字 + ヌル終端文字)
+      size_t bufferSize = totalMessageLength * 2 + 1;
+      char *hexBuffer = (char *)malloc(bufferSize);
+      if (!hexBuffer)
+      {
+        // ----- メモリ確保失敗(エラー応答する)
+        _sendErrorResponse(stream, -1); // -1: メッセージバッファ確保失敗
+        return;
+      }
+      char *p = hexBuffer;
+
+      // 効率的なループで16進数文字列を生成
+      for (int pos = 0; pos < totalMessageLength; pos++)
+      {
+        p += sprintf(p, "%02x", msg[pos]);
+      }
     
-    // JSON配列に直接文字列を追加
-    messages.add(hexBuffer);
+      // JSON配列に直接文字列を追加
+      messages.add(hexBuffer);
+      free(hexBuffer); // 確保したバッファを解放
+    }
+    serializeJson(msgJson, stream);
   }
-
-  String outputJson;
-  serializeJson(msgJson, outputJson);
-  stream.println(outputJson);
-  stream.println("");
-}
-
 
   void _sendSensorData(Stream &stream)
   {
-    DynamicJsonDocument msgJson(65535);
+    StaticJsonDocument<1024> msgJson;
     msgJson["result"] = true;
     msgJson["battery"] = _dataHolder->getBatteryLevel();
     msgJson["imu_temp"] = _dataHolder->getImuTemperature();
@@ -85,10 +96,8 @@ void _sendReceivedDcrMessages(Stream &stream)
     msgJson["lat"] = gps.location.lat();
     msgJson["lng"] = gps.location.lng();
     msgJson["alt"] = gps.altitude.meters();
-    String outputJson;
-    serializeJson(msgJson, outputJson);
-    stream.println(outputJson);
-    stream.println("");
+    msgJson["heap"] = esp_get_free_heap_size();
+    serializeJson(msgJson, stream);
   }
 
 public:
