@@ -11,7 +11,7 @@ def log_info(message):
     """標準エラー出力に情報メッセージを出力します。"""
     print(f"INFO: {message}", file=sys.stderr)
 
-def load_json_from_serial(port_name, baudrate=115200, timeout=35):
+def load_json_from_serial(port_name, command ="CMD:GETDCRMSG", baudrate=115200, timeout=40):
     """
     指定されたシリアルポートからJSONデータを読み込みます。
     
@@ -32,8 +32,8 @@ def load_json_from_serial(port_name, baudrate=115200, timeout=35):
     log_info(f"{port_name} に接続しています（{baudrate}bps）...")
     try:
         with serial.Serial(port_name, baudrate=baudrate, timeout=timeout) as ser:
-            log_info("コマンド 'CMD:GETDCRMSG' を送信します")
-            ser.write(b'CMD:GETDCRMSG\n')
+            log_info(f"コマンド {command} を送信します")
+            ser.write((f"{command}\n").encode())
 
             log_info(f"{port_name}から応答を受信しています。{timeout}秒お待ちください...")
             
@@ -72,31 +72,20 @@ def load_json_from_serial(port_name, baudrate=115200, timeout=35):
         log_error(f"シリアル通信中に予期せぬエラーが発生しました: {e}")
         raise
 
-def show_sensor_data(port_number, json_data):
-    """ JSONデータを解析してデータを表示する """
-    print(f"\n---  {port_number}  ---")
-    print(f"  ヒープメモリ  {json_data['heap']}")
-    print(f"  バッテリ残量  {json_data['battery']} %")
-    print(f"  温度          {json_data['temperature']} ℃  (IMU:{json_data['imu_temp']}) ")
-    print(f"  圧力          {json_data['pressure']} Pa")
-    print(f"  GPS           {json_data['is_gps']} (緯度: {json_data['lat']}  経度: {json_data['lng']})")
-    print(f"  Altitude      {json_data['alt']} m (IMU: {json_data['altitude']})")
-    print(f"  Acceleration  (x:{json_data['acc_x']} y:{json_data['acc_y']} z:{json_data['acc_z']})")
-    print(f"  Gyro          (x:{json_data['gyro_x']} y:{json_data['gyro_y']} z:{json_data['gyro_z']})")
-    print(f"  地磁気        (x:{json_data['mag_x']} y:{json_data['mag_y']} z:{json_data['mag_z']})")
-    print("\n\n")
-
-
 def main():
     """メイン関数: スクリプトの実行を制御します。"""
     parser = argparse.ArgumentParser(description="JSONデータをシリアルポートから読み込んで解析します。")
     parser.add_argument('-i', '--input', help='シリアルポート名（例: COM3, /dev/ttyUSB0）')
+    parser.add_argument('-c', '--command', help='送信するコマンド（例： CMD:GETSENSOR , CMD:GETDCRMSG）')
     args = parser.parse_args()
 
     json_data = None
     try:
         if args.input:
-            json_data = load_json_from_serial(args.input)
+            if args.command:
+                json_data = load_json_from_serial(args.input, args.command)
+            else:
+                json_data = load_json_from_serial(args.input)
         else:
             log_info("JSONデータをシリアルポートから読み込んで表示します。")
             log_info("オプションが指定されていません。 -i オプションで、読み込むシリアルポートを指定してください。")
