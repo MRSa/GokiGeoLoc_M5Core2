@@ -54,6 +54,7 @@ def load_json_from_serial(port_name, command ="CMD:GETDCRMSG", baudrate=115200, 
 
             json_str = buffer.decode('utf-8').strip()
             log_info("データ受信完了。JSONを解析します。")
+            print(json_str)  # --- 受信したJSONをそのままprint
             return json.loads(json_str)
 
     except serial.SerialException as e:
@@ -98,7 +99,7 @@ def main():
         sys.exit(1)
 
     # ----- データをダンプ
-    print(json_data)
+    #print(json_data)
     print("\n\n")
     log_info("処理を完了しました。")
 
