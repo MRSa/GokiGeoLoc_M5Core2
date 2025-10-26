@@ -133,16 +133,32 @@ def process_messages(messages):
         log_info("messages 配列が空です。")
         return
 
+    report_list = []
+    duplicate_count = 0
+
     for idx, message in enumerate(messages, start=1):
         try:
             binary_data = bytes.fromhex(message)
             report = azarashi.decode(binary_data, msg_type='ublox')
-            print(f"\n--- Report {idx} ---")
-            print(report)
+            is_matched = False
+            for data in report_list:
+                if data == report:
+                    is_matched = True
+            if is_matched == False:
+                report_list.insert(0, report)
+                print(f"\n--- Report {idx} ---")
+                print(report)
+            else:
+                # print(f"\n--- Duplicate {idx} ---")
+                # print(report)
+                duplicate_count += 1
         except ValueError as e:
             log_error(f"メッセージ {idx} の16進数変換に失敗しました: {e}")
         except Exception as e:
             log_error(f"メッセージ {idx} の解析に失敗しました: {e}")
+
+    message_count = len(messages) - duplicate_count
+    log_info(f"解析件数： {message_count} 件  (重複件数： {duplicate_count} / 総件数： {len(messages)})")
 
 def main():
     """メイン関数: スクリプトの実行を制御します。"""
